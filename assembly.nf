@@ -1,4 +1,4 @@
-#!/usr/bin/env nextflow 
+#!/usr/bin/env nextflow
 
 /* Help message*/
 if(params.help) {
@@ -13,21 +13,25 @@ else {
 error=false
 
 if (!params.in_dir){
-    println "${c_red}params.in_dir was empty - no input directory specified${c_reset}"
+    println "${c_red}\nparams.in_dir was empty - no input directory specified${c_reset}"
     error=true
 } else if (!file(params.in_dir).isDirectory()){
-    println "${c_red}params.in_dir is not a directory - no input directory specified${c_reset}"
+    println "${c_red}\nparams.in_dir is not a directory - no input directory specified${c_reset}"
     error=true
 }
 
 if (!params.out_dir){
-    println "${c_red}params.out_dir was empty - no output directory specified${c_reset}"
+    println "${c_red}\nparams.out_dir was empty - no output directory specified${c_reset}"
     error=true
 } else if (!file(params.out_dir).isDirectory()){
-    println "${c_red}params.out_dir is not a directory - no output directory specified${c_reset}"
+    println "${c_red}\nparams.out_dir is not a directory - no output directory specified${c_reset}"
     error=true
 }
 
+if (params.asm_coverage && !params.gsize){
+    println "${c_red}\nIf params.asm_coverage is specified, params.gsize is mandatory${c_reset}"
+    error=true
+}
 if (error) {
     exit 0
 }
@@ -37,14 +41,14 @@ process guppy {
 
     container 'genomicpariscentre/guppy:4.4.2'
     
-    publishDir "${params.out_dir}/basecalled", mode: "copy"
+    publishDir "${params.out_dir}/01.basecalled", mode: "copy"
     
     input:
     path x from Channel.fromPath(params.in_dir+"/fast5_all")
     
     output:
     path "merged/*.fastq" into fastq_w_guppy
-    path "*" into basecall_result
+    path "*" 
 
     when:
     params.basecall
@@ -64,10 +68,18 @@ process guppy {
 
     # when qc is skipped --> no pass directory
     mkdir merged
+    
     if [[ ${params.skip_qc} == false ]]; then
         dir="./pass/*"
     else
         dir="./*"
+    fi
+
+    IFS=','
+    read -ra BCS <<<"${params.barcodes}"
+    # als maar 1 barcode meegegeven wordt met leading 0: octaal voor bash
+    if [[ \${#BCS[@]} -eq 1 ]] && [[ \${#BCS[0]} -eq 1 ]]; then
+
     fi
 
     for d in \$dir
@@ -78,7 +90,16 @@ process guppy {
             break
         # merge with barcodes
         elif [[ \$d =~ barcode* ]]; then
-            cat \$d"/"* > ./merged/\$(basename \$d)".fastq"
+            # merge all the barcodes
+            if [[ \${#BCS[@]} -eq 0 ]]; then
+                cat \$d"/"* > ./merged/\$(basename \$d)".fastq"
+            # merge only the barcodes from params.barcodes
+            else
+                bc=\${d##*barcode}
+                if [[ " \${BCS[@]} " =~ " \$bc " ]]; then
+                    cat \$d"/"* > ./merged/\$(basename \$d)".fastq"
+                fi
+            fi
         fi
     done
     """
@@ -86,10 +107,10 @@ process guppy {
 
 process merge {
 
-    publishDir "${params.out_dir}/basecalled/", mode: "copy"
+    publishDir "${params.out_dir}/01.basecalled/", mode: "copy"
     
     input: 
-    path x from Channel.fromPath(params.in_dir+"/basecalled").collect()
+    path fq from Channel.fromPath(params.in_dir+"/basecalled").collect()
 
     when:
     !params.no_merge && !params.basecall
@@ -99,13 +120,31 @@ process merge {
 
     """
     mkdir merged
+    IFS=','
+    read -ra BCS <<<"${params.barcodes}"
+    # als maar 1 barcode meegegeven wordt met leading 0: octaal voor bash
+    if [[ \${#BCS[@]} -eq 1 ]] && [[ \${#BCS[0]} -eq 1 ]]; then
+        BCS[0]="0"\${BCS[0]}
+    fi
+
     for d in ./basecalled/*
     do
+        # merge without barcodes
         if [[ -f \$d ]]; then
             cat ./basecalled/*.fastq > ./merged/sample.fastq
             break
+        # merge with barcodes
         elif [[ \$d =~ barcode* ]]; then
-            cat \$d"/"* > ./merged/\$(basename \$d)".fastq"
+            # merge all the barcodes
+            if [[ \${#BCS[@]} -eq 0 ]]; then
+                cat \$d"/"* > ./merged/\$(basename \$d)".fastq"
+            # merge only the barcodes from params.barcodes
+            else
+                bc=\${d##*barcode}
+                if [[ " \${BCS[@]} " =~ " \$bc " ]]; then
+                    cat \$d"/"* > ./merged/\$(basename \$d)".fastq"
+                fi
+            fi
         fi
     done
     """
@@ -127,13 +166,14 @@ process nanoplot {
 
     container 'staphb/nanoplot:1.33.0'
 
-    publishDir "${params.out_dir}/qc/", mode:"copy"
+    publishDir "${params.out_dir}/02.qc/nanoplot", mode:"copy"
 
     input:
+    // .flatten() analyses all the barcodes separately 
     path fq from fastq_nanoplot
 
     output:
-    path "*" into nanoplot_result
+    path "*"
 
     when:
     params.nanoplot
@@ -148,13 +188,14 @@ process nanocomp {
 
     container 'nanocomp:latest'
 
-    publishDir "${params.out_dir}/qc/", mode:"copy"
+    publishDir "${params.out_dir}/02.qc/nanocomp", mode:"copy"
 
     input:
+    // .flatten() analyses all the barcodes separately
     path fq from fastq_nanocomp
 
     output:
-    path "*" into nanocomp_result
+    path "*"
     
     when:
     params.nanocomp 
@@ -163,49 +204,47 @@ process nanocomp {
     """
     NanoComp -t 4 -o ./nanocomp -f png --plot violin --fastq $fq
     """
-
 }
 
 process flye_assembly {
-
+        
     container 'staphb/flye:2.8'
+    
+    errorStrategy 'ignore'
+        
+    // pattern: publish everything except for the fqs
+    publishDir "${params.out_dir}/03.assembly/", mode: "copy", pattern: "${fq.simpleName}/*"
 
-	publishDir "${params.out_dir}/assembly/", mode: "copy"
+    input: 
+    path fq from fastq_assembly.flatten()
 
-	input: 
-	path fq from fastq_assembly.flatten()
+    output:
+    // **: search in above directories
+    path "**sample*" optional true
+    path "**flye.log" optional true 
+    tuple file(fq), file("*/*assembly.fasta") optional true into (flye_prokka, mapping)
 
-	output:
-	path "*" optional true into assembly
-    tuple file(fq), file("*/assembly.fasta") optional true into (flye_prokka, mapping)
-
-	when:
-	params.assemble
+    when:
+    params.assemble
 
     script:
 
-	gsize = params.gsize ? "--genome-size $params.gsize" : ""
+    gsize = params.gsize ? "--genome-size $params.gsize" : ""
+    plasmids = params.plasmids ? "--plasmids" : ""
+    coverage = params.asm_coverage ? "--asm-coverage $params.asm_coverage" : ""
+    meta = params.meta ? "--meta" : ""
 
     """
-    IFS=','
-    read -ra BCS <<<"${params.barcodes}"
-    # flye zonder barcodes
-    if [[ \${#BCS[@]} -eq 0 ]]; then
-        flye --nano-raw $fq $gsize --out-dir ./${fq.simpleName} -t ${params.assemblyP} -i 5
-    #flye met barcodes
-    else
-        count=0
-        for i in \${BCS[@]}
-        do
-            BCS[\$count]="barcode"\$i".fastq"
-            echo "barcode"\$i".fastq"
-            count=\$((count + 1))
-        done
-        if [[ " \${BCS[@]} " =~ " $fq " ]]; then
-            flye --nano-raw $fq $gsize --out-dir ./${fq.simpleName} -t ${params.assemblyP} -i 5
-        fi
+    flye --nano-raw $fq $gsize $coverage $plasmids $meta --out-dir ./${fq.simpleName} -t ${params.assemblyP} -i 5
 
-    fi
+    # add bc on assembly.fasta
+	for file in ./${fq.simpleName}/assembly*; do
+		basename=\${file##*/}
+		basename_no_ext=\${basename%.*}
+		extension=\${file##*.}
+		mv "\$file" "./${fq.simpleName}/${fq.simpleName}_\$basename_no_ext.\$extension"
+	done
+
     """
 } 
 
@@ -213,7 +252,7 @@ process mapping {
 
     container 'staphb/minimap2:2.17'
 
-    publishDir "${params.out_dir}/mapping/", mode: "copy"
+    publishDir "${params.out_dir}/04.mapping/", mode: "copy", pattern: "*.sam"
 
     input:
     tuple file(fq), file(assembly) from mapping
@@ -223,7 +262,7 @@ process mapping {
     tuple file(fq), file(assembly), file("*.sam") into racon
 
     when:
-	params.mapping
+    params.mapping || params.polishing
     
     """
     minimap2 -a $assembly $fq > ${fq.simpleName}.sam
@@ -234,7 +273,7 @@ process sam_to_bam {
 
     container 'staphb/samtools:1.11'
 
-    publishDir "${params.out_dir}/mapping", mode: "copy"
+    publishDir "${params.out_dir}/04.mapping", mode: "copy"
 
     input:
     path x from sam_files
@@ -243,7 +282,7 @@ process sam_to_bam {
     path "*" into bam_files
 
     when:
-	params.mapping
+    params.mapping
     
     """
     samtools view -S -b $x > ${x.simpleName}.bam
@@ -254,7 +293,7 @@ process sort_bam {
 
     container 'staphb/samtools:1.11'
 
-    publishDir "${params.out_dir}/mapping", mode: "copy"
+    publishDir "${params.out_dir}/04.mapping", mode: "copy"
 
     input:
     path x from bam_files
@@ -263,7 +302,7 @@ process sort_bam {
     path "*" into sorted_bam_files
 
     when:
-	params.mapping
+    params.mapping
     
     """
     samtools sort $x -o ${x.simpleName}_sorted.bam
@@ -274,7 +313,7 @@ process index_bam {
     
     container 'staphb/samtools:1.11'
 
-    publishDir "${params.out_dir}/mapping", mode: "copy"
+    publishDir "${params.out_dir}/04.mapping", mode: "copy"
 
     input:
     path x from sorted_bam_files
@@ -283,7 +322,7 @@ process index_bam {
     path "*" into indexed_bam_files
 
     when:
-	params.mapping
+    params.mapping
     
     """
     samtools index $x
@@ -291,10 +330,15 @@ process index_bam {
 }
 
 process racon {
+    
+    /* when data is limited, sometimes Flye produces an assembly empty assembly, which will cause an error.
+    errorStragy 'ignore' will not terminate te script if this occurs */
 
+    errorStrategy 'ignore'    
+   
     container 'staphb/racon:1.4.20'
 
-    publishDir "${params.out_dir}/polishing/racon", mode: "copy"
+    publishDir "${params.out_dir}/05.polishing/racon", mode: "copy" , pattern: "*_racon.fasta"
 
     input:
     tuple file(fq), file(assembly), file(alignment) from racon
@@ -310,27 +354,27 @@ process racon {
     # -m 8 -x -6 -g -8 -w 500: recommended parameters before using medaka
     racon $fq $alignment $assembly -t ${params.threads_polishing} -m 8 -x -6 -g -8 -w 500 > ${fq.simpleName}_racon.fasta 
     """
-
 }
 
 process medaka {
 
     container 'staphb/medaka:1.2.0'
 
-    publishDir "${params.out_dir}/polishing/medaka", mode: "copy"
+    publishDir "${params.out_dir}/05.polishing/medaka", mode: "copy", pattern: "**.fasta"
 
     input:
     tuple file(fq), file(assembly) from medaka
 
     output:
-    path "*" into medaka_result
-    tuple file(fq), file ("*/consensus.fasta") into medaka_prokka
+    path "**.fasta" into medaka_result
+    tuple file(fq), file ("**consensus.fasta") into medaka_prokka
 
     when:
     params.polishing
 
     """
     medaka_consensus -i $fq -d $assembly -o ./${fq.simpleName} -t ${params.threads_polishing} -m ${params.model} 
+    mv ./${fq.simpleName}/consensus.fasta ${fq.simpleName}_consensus.fasta
     """
 
 }
@@ -343,22 +387,22 @@ else {
 }
 
 process prokka_annotation {
-
+  
     container 'staphb/prokka:1.14.5'
     
-    publishDir "${params.out_dir}/prokka/", mode: "copy"
+    publishDir "${params.out_dir}/06.annotation/", mode: "copy"
 
     input:
     tuple file(fq), file(assembly) from prokka_tuple
 
-	output:
-	path "*" into prokka_result
+    output:
+    path "*" into prokka_result
 
-	when:
-	params.annotation
+    when:
+    params.annotation
 
     """
-    prokka --outdir ./${fq.simpleName} --prefix ${fq.simpleName} $assembly
+    prokka --outdir ./${fq.simpleName} --prefix ${fq.simpleName} $assembly --cpus ${params.threads_annotation}
     """
 }
 
@@ -391,37 +435,54 @@ def helpMessage() {
 
     ${c_cyan}Basecalling:${c_reset}                    | ${c_blue}Only when providing --basecall option${c_reset}
     • basecall:                     | ${c_yellow}If provided, this will basecall fast5 files from in_dir ${c_reset}
+   	default: false
     • barcode_kits:                 | ${c_yellow}If provided, this will demultiplex the samples using the provided kit${c_reset}
     • bc_config:                    | ${c_yellow}If provided, will use a different config file then default${c_reset}
         default: dna_r9.4.1_450bps_fast.cfg
     • skip_qc:                      | ${c_yellow}If provided, this will not split basecalled reads into pass or fail${c_reset}
+   	default: false 
     • num_callers (default:1):      | ${c_yellow}Number of callers to use for basecalling (1=4 threads!)${c_reset}
-
+	default: 1
     ${c_cyan}Merging:${c_reset}  
     • no_merge:                     | ${c_yellow}If provided: will expect a /basecalled/ folder with fastq files for each barcode / a sample${c_reset}
-                                    | ${c_yellow}If not provided: will expect a /basecalled/merged/ folder with merged fastq files for each barcode${c_reset}
+    	default: false              | ${c_yellow}If not provided: will expect a /basecalled/merged/ folder with merged fastq files for each barcode${c_reset}
                                     | ${c_yellow}/ a sample${c_reset}
    
     ${c_cyan}QC:${c_reset}                             | ${c_blue}Quality Control steps${c_reset}
     • nanocomp:                     | ${c_yellow}If provided, will perform nanocomp analysis ${c_reset}
+	default: true  
     • nanoplot:                     | ${c_yellow}If provided, will perform nanoplot analysis ${c_reset}
+	default: true
 
     ${c_cyan}Assembly:${c_reset}                       | ${c_blue}Only when providing --assemble option${c_reset}
     • assemble:                     | ${c_yellow}If provided, this will assemble the genomes using Flye ${c_reset}
+	default:true
     • gsize:                        | ${c_yellow}Expected genome size (not mandatory) ${c_reset}
-    • assemblyP (default: 8):       | ${c_yellow}Number of threads per barcode (use max: 32/nbarcodes) ${c_reset}
+    • meta:                         | ${c_yellow}Metagenome / Uneven coverage${c_reset}
+    • plasmids:                     | ${c_yellow}rescue short unassembled plasmids${c_reset}
+    • asm_coverage:                 | ${c_yellow}reduced coverage for initial disjointig assembl${c_reset}
+    • assemblyP	 	                | ${c_yellow}Number of threads per barcode (use max: 32/nbarcodes) ${c_reset}
+	default: 8   
     • barcodes:                     | ${c_yellow}Comma separated list of barcode numbers that are expected, if barcodes are provided${c_reset}
                                     | ${c_yellow}Numbers should include the leading 0s. E.g. 03,08,11${c_reset}
 
     ${c_cyan}mapping:${c_reset}                        | ${c_blue}If provided, will map, sort and index sequences ${c_reset}
+	default: true
 
     ${c_cyan}polishing:${c_reset}                      | ${c_blue}If provided, will polish sequences (requires mapping) ${c_reset}
+	default: true   
     • threads_polishing             | ${c_yellow}Number of threads used for polishing ${c_reset}
+   	default: 8
     • model:                        | ${c_yellow}Model used for Medaka polishing: {pore}_{device}_{caller variant}_{caller version} ${c_reset}
         default: r941_min_fast_g303
+	    hac: r941_min_high_g360
+	    bonito: bonito_medaka_0.3.1.hdf5
 
     ${c_cyan}annotation:${c_reset}                     | ${c_blue}If provided, will anotate sequences (requires mapping) ${c_reset}
-   
+   	default: true
+    • threads_annotation	    | ${c_yellow}Number of threads used for annotation ${c_reset} 
+        default: 8  
+ 
     • help                          | ${c_yellow}Show this${c_reset}
                         
     
@@ -488,6 +549,9 @@ def parameterShow() {
     if (params.assemble) {
         text = text + """ ${c_yellow}${params.assemble}${c_reset}
     • gsize:                        | ${c_yellow}${params.gsize}${c_reset}
+    • meta:                         | ${c_yellow}${params.meta}${c_reset}
+    • plasmids:                     | ${c_yellow}${params.plasmids}${c_reset}
+    • asm_coverage:                 | ${c_yellow}${params.asm_coverage}${c_reset}
     • assemblyP:                    | ${c_yellow}${params.assemblyP} ${c_reset}
     • barcodes:                     | ${c_yellow}${params.barcodes} ${c_reset}
 
@@ -505,7 +569,7 @@ def parameterShow() {
     """
 
     text = text + """${c_cyan}Polishing:${c_reset}
-    • polishing:                     |"""
+    • polishing:                    |"""
 
     if (params.polishing) {
         text = text + """ ${c_yellow}${params.polishing}${c_reset}
@@ -515,15 +579,26 @@ def parameterShow() {
     """
     }
     else {
-        text=text+""" ${c_yellow}${params.polishing}${c_reset}
+        text = text + """ ${c_yellow}${params.polishing}${c_reset}
 
     """
     }
 
     text = text + """${c_cyan}Annotation:${c_reset}
-    • annotation:                   | ${c_yellow}${params.annotation}${c_reset}
+    • annotation:                   | """
+
+    if (params.annotation) {
+	text = text + """${c_yellow}${params.annotation}${c_reset}
+    • threads_annotation:           | ${c_yellow}${params.threads_annotation}${c_reset} 
 
     """
+    }
+    else {
+	text = text + """${c_yellow}${params.annotation}${c_reset}
+    
+    """
+    } 
+   
 
     text=text+"""Output directory:  | ${c_yellow}${params.out_dir}${c_reset}
     =================================================="""
