@@ -11,5 +11,6 @@ Nextflow script for assembly of bacterial genomes from nanopore data
 * Samtools http://www.htslib.org/
 * Racon https://github.com/isovic/racon
 * Medaka https://github.com/nanoporetech/medaka
+* Prokka https://github.com/tseemann/prokka
 
 
