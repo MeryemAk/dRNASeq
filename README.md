@@ -23,7 +23,7 @@ There are 2 directories that needed to be specified:
   2. FASTQ files (multiple FASTQ files that are not merged yet)
   3. Merged FASTQ file (one FASTQ file per barcode/sample)
 
-In_dir directory structure for the 3 types of input: <br>
+in_dir directory structure for the 3 types of input: 
   2. FASTQ files: The in_dir must contain a folder named "basecalled" with the FASTQ files. If barcodes are used, a folder for each barcode that contains all the FASTQ-file is expected.
 <p align="left" width="100%">
   basecalled directory with the FASTQ files per barcode: <br>
