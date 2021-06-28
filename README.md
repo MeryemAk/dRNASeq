@@ -24,8 +24,10 @@ There are 2 directories that needed to be specified:
 3. Merged FASTQ file (one FASTQ file per barcode/sample)
 
 In_dir directory structure for the 3 types of input:
-2. FASTQ files are selected for input: The in_dir must contain a basecalled folder with the FASTQ files. If there are barcodes used, a folder that contains all the FASTQ-files for each barcode is expected
-3. Merged FASTQ file: The in_dir must contain a basecalled folder with the merged FASTQ file(s)
+2. FASTQ files: The in_dir must contain a folder named "basecalled" with the FASTQ files. If barcodes are used, a folder for each barcode that contains all the FASTQ-file is expected.
+![image](https://user-images.githubusercontent.com/56390957/123658980-823e0880-d832-11eb-93bd-eb637d10c8a2.png)
+
+4. Merged FASTQ file: The in_dir must contain a folder named "basecalled" with the merged FASTQ file(s)
 
 
 
