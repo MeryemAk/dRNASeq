@@ -21,6 +21,7 @@ Nextflow script for assembly of bacterial genomes from Nanopore data
 - Annotation of the assembly
 
 ## Usage
+```
 nextflow run assembly.nf --in_dir PATH --out_dir PATH
                          [--basecall][--barcode_kits][--bc_config][--skip_qc][--num_callers]
                          [--no_merge]
@@ -32,7 +33,7 @@ nextflow run assembly.nf --in_dir PATH --out_dir PATH
                          [--help]
  optional arguments:
   --help 
-
+```
 
 ## Input parameters
 There are 2 directories that needed to be specified:
