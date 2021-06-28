@@ -28,7 +28,7 @@ In_dir directory structure for the 3 types of input:
 <p align="left" width="100%">
   basecalled directory with the FASQ files per barcode <br>
   <img width="20%" src="https://user-images.githubusercontent.com/56390957/123658980-823e0880-d832-11eb-93bd-eb637d10c8a2.png">
-  <img width="40%" src="https://user-images.githubusercontent.com/56390957/123661149-9c78e600-d834-11eb-9f3a-0c245b3ce6c8.png">
+  <img width="30%" src="https://user-images.githubusercontent.com/56390957/123661149-9c78e600-d834-11eb-9f3a-0c245b3ce6c8.png">
 </p>
 
 4. Merged FASTQ file: The in_dir must contain a folder named "basecalled" with the merged FASTQ file(s)
