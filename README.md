@@ -13,7 +13,14 @@ Nextflow script for assembly of bacterial genomes from Nanopore data
 * Medaka https://github.com/nanoporetech/medaka
 * Prokka https://github.com/tseemann/prokka
 
-## General workflow
+## Possibilities
+- QC control of the reads
+- Assembly creation
+- Mapping of original reads against the assembly
+- Polishing of assembly
+- Annotation of the assembly
+
+## Input parameters
 There are 2 directories that needed to be specified:
 - in_dir: the input directory that contains the data that needed to be analysed
 - out_dir: the output directory that will contain the results
@@ -34,12 +41,12 @@ in_dir directory structure for the 3 types of input: <br>
 
   3. Merged FASTQ file: The in_dir must contain a folder named "basecalled" with the merged FASTQ file(s) <br>
 
-## Possibilities
-- QC control
-- Assembly
-- Mapping of original reads against the assembly
-- Polishing of assembly
-- Annotation of the assembly
+## Additional parameters
+### 01. Basecalling
+
+
+
+
  
  
 
