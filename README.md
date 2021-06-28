@@ -20,6 +20,20 @@ Nextflow script for assembly of bacterial genomes from Nanopore data
 - Polishing of assembly
 - Annotation of the assembly
 
+## Usage
+nextflow run assembly.nf --in_dir PATH --out_dir PATH
+                         [--basecall][--barcode_kits][--bc_config][--skip_qc][--num_callers]
+                         [--no_merge]
+                         [--nanocomp][--nanoplot]
+                         [--assemble][--gsize][--meta][--plasmids][--asm_coverage][--assemblyP]
+                         [--mapping]
+                         [--polishing][--model][--trheads_polishing]
+                         [--annotation][--threads_annotation]
+                         [--help]
+ optional arguments:
+  --help 
+
+
 ## Input parameters
 There are 2 directories that needed to be specified:
 - in_dir: the input directory that contains the data that needed to be analysed
