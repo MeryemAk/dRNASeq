@@ -13,4 +13,11 @@ Nextflow script for assembly of bacterial genomes from nanopore data
 * Medaka https://github.com/nanoporetech/medaka
 * Prokka https://github.com/tseemann/prokka
 
+## General workflow
+3 types of input are possible.
+- FAST5 files
+- FASTQ files (mutliple FASTQ files per barcode that are not merged yet)
+- Merged FASTQ file (one FASTQ file per barcode)
+
+
 
