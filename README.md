@@ -25,7 +25,7 @@ There are 2 directories that needed to be specified:
 
 in_dir directory structure for the 3 types of input: <br>
   1. <br>
-  2. FASTQ files: The in_dir must contain a folder named "basecalled" with the FASTQ files. If barcodes are used, a folder for each barcode that contains all the FASTQ-file is expected.
+  2. FASTQ files: The in_dir must contain a folder named "basecalled" with the FASTQ files. If barcodes are used, a folder for each barcode that contains all the FASTQ-files is expected.
 <p align="left" width="100%">
   basecalled directory with the FASTQ files per barcode: <br>
   <img width="20%" src="https://user-images.githubusercontent.com/56390957/123658980-823e0880-d832-11eb-93bd-eb637d10c8a2.png">
