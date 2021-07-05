@@ -8,14 +8,14 @@ if(params.help) {
 else {
     print parameterShow()
 }
-
 /* parameters validation */
 error=false
 
 if (!params.in_dir){
     println "${c_red}\nparams.in_dir was empty - no input directory specified${c_reset}"
     error=true
-} else if (!file(params.in_dir).isDirectory()){
+} 
+else if (!file(params.in_dir).isDirectory()){
     println "${c_red}\nparams.in_dir is not a directory - no input directory specified${c_reset}"
     error=true
 }
@@ -23,9 +23,40 @@ if (!params.in_dir){
 if (!params.out_dir){
     println "${c_red}\nparams.out_dir was empty - no output directory specified${c_reset}"
     error=true
-} else if (!file(params.out_dir).isDirectory()){
+} 
+else if (!file(params.out_dir).isDirectory()){
     println "${c_red}\nparams.out_dir is not a directory - no output directory specified${c_reset}"
     error=true
+}
+
+if (!params.basecall && !params.no_merge && (!file("${params.in_dir}/basecalled/").isDirectory())) {
+    println "${c_red}\nparams.in_dir needs to contain a basecalled directory with fastq files${c_reset}"
+    println "${c_red}\nMake a basecalled directory inside the params.in_dir${c_reset}"
+    error=true
+}
+
+
+if (!params.basecall && !params.no_merge && (file("${params.in_dir}/basecalled/merged").isDirectory())) {
+    println "${c_red}\n params.in_dir contains a basecalled/merged directory, fastqc's are already merged! ${c_reset}"
+    println "${c_red}\n Set params.no_merge to true ${c_reset}"
+    error=true
+}
+
+if (!params.basecall && params.no_merge && (!file("${params.in_dir}/basecalled/merged").isDirectory())) {
+    println "${c_red}\n params.in_dir needs to contain a basecalled/merged directory when params.no_merge = true${c_reset}"
+    error=true
+}
+else if (!params.basecall && params.no_merge && (file("${params.in_dir}/basecalled/merged").isDirectory())) {
+    count = 0
+    file("${params.in_dir}/basecalled/merged").eachFile {
+        if (it.name.endsWith('.fastq')) {
+            count += 1
+        }
+    }
+    if (count == 0) {
+        println "${c_red}\nNo fastq files found in the basecalled/merged directory${c_reset}"
+        error=true
+    }
 }
 
 if (params.asm_coverage && !params.gsize){
@@ -79,9 +110,9 @@ process guppy {
     read -ra BCS <<<"${params.barcodes}"
     # als maar 1 barcode meegegeven wordt met leading 0: octaal voor bash
     if [[ \${#BCS[@]} -eq 1 ]] && [[ \${#BCS[0]} -eq 1 ]]; then
-
+        BCS[0]="0"\${BCS[0]}
     fi
-
+    
     for d in \$dir
     do
         # merge without barcodes
@@ -150,13 +181,38 @@ process merge {
     """
 }
 
-if (params.no_merge && !params.basecall) {
-	fastq_merged = Channel.fromPath(params.in_dir+"/basecalled/merged/*.fastq")
-	fastq_w_guppy = Channel.empty()
-	fastq_wo_guppy = Channel.empty()
-}
-else {
-	fastq_merged = Channel.empty()
+process no_merge {
+
+    publishDir "${params.out_dir}/01.basecalled/merged", mode: "copy"
+    
+    input: 
+    path fq from Channel.fromPath(params.in_dir+"/basecalled/merged/*")
+
+    when:
+    params.no_merge && !params.basecall
+
+    output:
+    path "*.fastq" into fastq_merged
+
+    """
+    IFS=','
+    read -ra BCS <<<"${params.barcodes}"
+    # als maar 1 barcode meegegeven wordt met leading 0: octaal voor bash
+    if [[ \${#BCS[@]} -eq 1 ]] && [[ \${#BCS[0]} -eq 1 ]]; then
+        BCS[0]="0"\${BCS[0]}
+    fi
+
+    if [[ \${#BCS[@]} -ne 0 ]]; then
+	    file=${fq}
+	    basename=\${file%.*}
+	    bc=\${basename##barcode}
+	    if [[ " \${BCS[@]} " =~ " \$bc " ]]; then
+            echo "\$bc"
+ 	        find . -type f -name "barcode\${bc}*.fastq" > barcode\${bc}*.fastq
+	    fi
+    fi
+    """
+
 }
 
 fastqs = fastq_w_guppy.mix(fastq_wo_guppy, fastq_merged)
@@ -213,14 +269,14 @@ process flye_assembly {
     errorStrategy 'ignore'
         
     // pattern: publish everything except for the fqs
-    publishDir "${params.out_dir}/03.assembly/", mode: "copy", pattern: "${fq.simpleName}/*"
+    publishDir "${params.out_dir}/03.assembly/", mode: "copy"
 
     input: 
     path fq from fastq_assembly.flatten()
 
     output:
     // **: search in above directories
-    path "**sample*" optional true
+    path "*/*assembly*" optional true
     path "**flye.log" optional true 
     tuple file(fq), file("*/*assembly.fasta") optional true into (flye_prokka, mapping)
 
@@ -358,7 +414,7 @@ process racon {
 
 process medaka {
 
-    container 'staphb/medaka:1.2.0'
+    container 'medaka:samtools1_9'
 
     publishDir "${params.out_dir}/05.polishing/medaka", mode: "copy", pattern: "**.fasta"
 
@@ -606,4 +662,6 @@ def parameterShow() {
 
     return text;
 }
+
+
 
