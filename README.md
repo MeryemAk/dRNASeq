@@ -1,5 +1,5 @@
 
-# bacterial_assembly
+# Bacterial_assembly
 Nextflow script for assembly of bacterial genomes from Nanopore data
 
 ## Tools used
@@ -19,6 +19,10 @@ Nextflow script for assembly of bacterial genomes from Nanopore data
 - Mapping of original reads against the assembly
 - Polishing of assembly
 - Annotation of the assembly
+
+## Installation
+### Prerequisites
+Only Docker is needed for the installation of this tool.
 
 ## Usage
 ```
