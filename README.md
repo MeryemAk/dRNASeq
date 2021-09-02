@@ -1,6 +1,6 @@
 
 # Bacterial_assembly
-Nextflow script for assembly of bacterial genomes from Nanopore data
+Nextflow script for assembly of bacterial genomes from Nanopore data. 
 
 ## Tools used
 * Guppy basecaller (nanopore community)
@@ -22,7 +22,17 @@ Nextflow script for assembly of bacterial genomes from Nanopore data
 
 ## Installation
 ### Prerequisites
-Only Docker is needed for the installation of this tool.
+Only Docker is needed for the installation of this tool (https://docs.docker.com/get-docker/).
+
+## F
+1) Pull the Docker image of nextflow from Dockerhub:
+```
+docker pull nextflow:nextflow
+```
+2) Start the nextflow container:
+docker run -it --workdir $PWD -v /var/run/docker.sock:/var/run/docker.sock -v $HOME:$HOME  nextflow/nextflow /bin/bash 
+
+3) Now you are in the container and the workflow can be executed. All the different tools run in different containers. These will be pulled automatically (when you don't have them yet locally) when the process in Nextflow is started.
 
 ## Usage
 ```
