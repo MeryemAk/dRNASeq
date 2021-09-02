@@ -1,8 +1,9 @@
 
 # Bacterial_assembly
-Nextflow script for assembly of bacterial genomes from Nanopore data. 
+Nextflow script for assembly of bacterial genomes from Nanopore data. This workflow can be used on Linux or Windows.
 
 ## Tools used
+* Nextflow https://www.nextflow.io/
 * Guppy basecaller (nanopore community)
 * Nanocomp https://github.com/wdecoster/nanocomp
 * Nanoplot https://github.com/wdecoster/NanoPlot
@@ -22,17 +23,20 @@ Nextflow script for assembly of bacterial genomes from Nanopore data.
 
 ## Installation
 ### Prerequisites
-Only Docker is needed for the installation of this tool (https://docs.docker.com/get-docker/).
+On Windows, only Docker is needed for the installation of this tool (https://docs.docker.com/get-docker/).
+On Linux, Docker is needed. One may choose to install Nextflow (https://www.nextflow.io/docs/latest/getstarted.html) or use the Nextflow container.
 
-## F
-1) Pull the Docker image of nextflow from Dockerhub:
+## Quick start
+1) Make sure that the assembly.nf script and the nextflow.config file are in your home directory. The data that will be analysed also needs to be in this folder (for more details on de structure of the input folder, see input parameters).
+2) Pull the Docker image of nextflow from Dockerhub (This is only necesssary the first time the worklfow is used):
 ```
-docker pull nextflow:nextflow
+$ docker pull nextflow:nextflow
 ```
-2) Start the nextflow container:
+3) Start the nextflow container:
+```
 docker run -it --workdir $PWD -v /var/run/docker.sock:/var/run/docker.sock -v $HOME:$HOME  nextflow/nextflow /bin/bash 
-
-3) Now you are in the container and the workflow can be executed. All the different tools run in different containers. These will be pulled automatically (when you don't have them yet locally) when the process in Nextflow is started.
+```
+3) Now you are in the container and the workflow can be executed. All the different tools run in different containers. These will be pulled automatically (when you don't have them yet locally) when the corresponding process in Nextflow is started.
 
 ## Usage
 ```
@@ -49,7 +53,7 @@ nextflow run assembly.nf --in_dir PATH --out_dir PATH
   --help 
 ```
 
-## Input parameters
+### Input parameters
 There are 2 directories that needed to be specified:
 - in_dir: the input directory that contains the data that needed to be analysed
 - out_dir: the output directory that will contain the results
