@@ -75,19 +75,18 @@ in_dir directory structure for the 3 types of input: <br>
   3. Merged FASTQ file: The in_dir must contain a folder named "merged" with the folder "basecalled" with the merged FASTQ file(s) per barcode(s) <br>
 
 ## Additional parameters
-  [--no_merge:] (default:false) If provided, will expect a basecalled/merged direcotry with the merged FASTQ file(s) per barcode(s)
-  [--barcodes:] Comma separated list of barcode numbers that are expected, if barcodes are provided. Numbers should include the leading 0s. E.g. 03,08,11. 
-  [--nanocomp:] (default:true) If provided, will perform nanocomp analysis
-  [--nanoplot:] (default:true) If provided, will perform nanoplot analysis
-  [--assemble:] (default:true) If provided, this will assemble the genomes using Flye
-  [--assemblyP] (default: 8) Number of threads per barcode 
-                If the assemble option is provided: here are some extra Flye parameters that can be submitted:
-                [--gsize:] Expected genome size
-                [--meta] Metagenome / Uneven coverage
-                [--plasmids:] rescue short unassembled plasmids
-                [--asm_coverage:] reduced coverage for initial disjointig assembly
-
-
+ * [--no_merge:] (default:false) If provided, will expect a basecalled/merged direcotry with the merged FASTQ file(s) per barcode(s)
+ * [--barcodes:] Comma separated list of barcode numbers that are expected, if barcodes are provided. Numbers should include the leading 0s. E.g. 03,08,11. 
+ * [--nanocomp:] (default:true) If provided, will perform nanocomp analysis
+ * [--nanoplot:] (default:true) If provided, will perform nanoplot analysis
+ * [--assemble:] (default:true) If provided, this will assemble the genomes using Flye
+ * [--assemblyP] (default: 8) Number of threads per barcode 
+ * If the assemble option is provided: here are some extra Flye parameters that can be submitted:
+   - [--gsize:] Expected genome size
+   - [--meta] Metagenome / Uneven coverage
+   - [--plasmids:] rescue short unassembled plasmids
+   - [--asm_coverage:] reduced coverage for initial disjointig assembly
+ * [--mapping] (default: true) 
 
  
  
