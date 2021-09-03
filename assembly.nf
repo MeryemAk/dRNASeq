@@ -242,7 +242,7 @@ process nanoplot {
 
 process nanocomp {
 
-    container 'nanocomp:latest'
+    container 'bikc/nanocomp:v1'
 
     publishDir "${params.out_dir}/02.qc/nanocomp", mode:"copy"
 
@@ -414,7 +414,7 @@ process racon {
 
 process medaka {
 
-    container 'medaka:samtools1_9'
+    container 'bikc/medaka:v1'
 
     publishDir "${params.out_dir}/05.polishing/medaka", mode: "copy", pattern: "**.fasta"
 
@@ -662,6 +662,4 @@ def parameterShow() {
 
     return text;
 }
-
-
 
