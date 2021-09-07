@@ -1,8 +1,11 @@
 
 # Bacterial_assembly
-Nextflow script for assembly of bacterial genomes from Nanopore data. This workflow can be used on Linux or Windows. All the different tools run in different containers, which makes the bacterial assembly workflow independent of the platform that is used. 
+Nextflow script for assembly of bacterial genomes from Nanopore data. This workflow can be used on Linux or Windows. All the different tools run in different containers, which makes the bacterial assembly workflow independent of the platform used. 
 
-## Tools used
+## Tools used in the workflow
+
+![image](https://user-images.githubusercontent.com/56390957/132333064-028d4052-c7d8-4c83-a90c-e12a76356a6e.png)
+
 * Nextflow https://www.nextflow.io/
 * Guppy basecaller (nanopore community)
 * Nanocomp https://github.com/wdecoster/nanocomp
@@ -27,8 +30,8 @@ On Windows, only Docker is needed for the installation of this tool (https://doc
 On Linux, Docker is needed. One may choose to install Nextflow (https://www.nextflow.io/docs/latest/getstarted.html) or use the Nextflow container.
 
 ## Quick start
-1) Make sure that the assembly.nf script and the nextflow.config file are in your home directory. The data that will be analysed also needs to be in this folder (for more details on de structure of the input folder, see input parameters).
-2) Pull the Docker image of nextflow from Dockerhub (This is only necesssary the first time the worklfow is used):
+1) Make sure that the assembly.nf script and the nextflow.config file are in your home directory. The data that will be analysed also needs to be in this folder (for more details on de structure of the input folder, see mandatory parameters).
+2) Pull the Docker image of nextflow from Dockerhub (This is only necesssary the first time the workflow is used):
 ```
 $ docker pull nextflow:nextflow
 ```
@@ -36,7 +39,7 @@ $ docker pull nextflow:nextflow
 ```
 $ docker run -it --workdir $PWD -v /var/run/docker.sock:/var/run/docker.sock -v $HOME:$HOME  nextflow/nextflow /bin/bash 
 ```
-3) Now you are in the container and the workflow can be executed. All the different tools run in different containers. These will be pulled automatically (when you don't have them yet locally) when the corresponding process in Nextflow is started.
+3) Now you are in the Nextflow container and the workflow can be executed. All the different tools run in different containers. These will be pulled automatically (when you don't have them yet locally) when the corresponding process in Nextflow is started.
 
 ## Usage
 ```
@@ -61,34 +64,34 @@ Two parameters are mandatory:
 3 types of input are possible:
   1. FAST5 files
   2. FASTQ files (multiple FASTQ files that are not merged yet)
-  3. A merged FASTQ file (one FASTQ file per barcode/sample)
+  3. A merged FASTQ file (one big FASTQ file per barcode/sample)
 
-in_dir directory structure for the 3 types of input: <br>
+For the 3 types of input, the structure must be the following: <br>
   1. <br>
   2. FASTQ files: The in_dir must contain a folder named "basecalled" with the FASTQ files. If barcodes are used, a folder for each barcode that contains all the FASTQ-files for that barcode is expected.
-<p align="left" width="100%">
-  basecalled directory with the FASTQ files per barcode: <br>
-  <img width="20%" src="https://user-images.githubusercontent.com/56390957/123658980-823e0880-d832-11eb-93bd-eb637d10c8a2.png">
-  <img width="30%" src="https://user-images.githubusercontent.com/56390957/123661149-9c78e600-d834-11eb-9f3a-0c245b3ce6c8.png">
-</p>
+  
+  Example of a possible in_dir "bacterial_assembly" with the "basecalled" directory that contains FASTQ files for barcode 14 and barcode 16:<br>
+  <img src="https://user-images.githubusercontent.com/56390957/132334926-20a5a757-343b-427c-81ef-40f69505a57e.png">
 
-  3. Merged FASTQ file: The in_dir must contain a folder named "merged" with the folder "basecalled" with the merged FASTQ file(s) per barcode(s) <br>
+  3. Merged FASTQ file: The in_dir must contain a folder named "merged" with the folder "basecalled" with the merged FASTQ file(s) per barcode(s)
+  
+  Example of a possible in_dir "bacterial_assembly" with the "basecalled" and "merged" directory with the merged FASTQ files of barcode 14 and barcode 16:<br>
+  <img src="https://user-images.githubusercontent.com/56390957/132337894-907ac818-f48f-4b2c-8f7d-16faf1879c30.png">
 
 ## Additional parameters
- * [--no_merge:] (default:false) If provided, will expect a basecalled/merged direcotry with the merged FASTQ file(s) per barcode(s)
- * [--barcodes:] Comma separated list of barcode numbers that are expected, if barcodes are provided. Numbers should include the leading 0s. E.g. 03,08,11. 
- * [--nanocomp:] (default:true) If provided, will perform nanocomp analysis
- * [--nanoplot:] (default:true) If provided, will perform nanoplot analysis
- * [--assemble:] (default:true) If provided, this will assemble the genomes using Flye
- * [--assemblyP] (default: 8) Number of threads per barcode 
+ * [--no_merge]: (default:false) If provided, will expect a basecalled/merged direcotry with the merged FASTQ file(s) per barcode(s)
+ * [--barcodes]: Comma separated list of barcode numbers that are expected, if barcodes are provided. Numbers should include the leading 0s. E.g. 03,08,11. 
+ * [--nanocomp]: (default:true) If provided, will perform nanocomp analysis
+ * [--nanoplot]: (default:true) If provided, will perform nanoplot analysis
+ * [--assemble]: (default:true) If provided, this will assemble the genomes using Flye
+ * [--assembly_threads]: (default: 8) Number of threads per barcode 
  * If the assemble option is provided: here are some extra Flye parameters that can be submitted:
-   - [--gsize:] Expected genome size
-   - [--meta] Metagenome / Uneven coverage
-   - [--plasmids:] rescue short unassembled plasmids
-   - [--asm_coverage:] reduced coverage for initial disjointig assembly
- * [--mapping] (default: true) 
+   - [--gsize]: Expected genome size
+   - [--meta]: Metagenome / Uneven coverage
+   - [--plasmids]: rescue short unassembled plasmids
+   - [--asm_coverage]: reduced coverage for initial disjointig assembly
+ * [--mapping]: (default: true)
 
- 
  
 
 
