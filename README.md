@@ -79,22 +79,23 @@ For the 3 types of input, the structure must be the following: <br>
   <img src="https://user-images.githubusercontent.com/56390957/132337894-907ac818-f48f-4b2c-8f7d-16faf1879c30.png">
 
 ## Additional parameters
- * [--no_merge]: (default:false) If provided, will expect a basecalled/merged direcotry with the merged FASTQ file(s) per barcode(s)
- * [--barcodes]: Comma separated list of barcode numbers that are expected, if barcodes are provided. Numbers should include the leading 0s. E.g. 03,08,11. 
+ * [--merged]: (default:false) If provided, will expect a basecalled/merged direcotry with the merged FASTQ file(s) per barcode(s)
+ * [--barcodes]: (default:none) Comma separated list of barcode numbers that are expected, if barcodes are provided. Numbers should include the leading 0s. E.g. 03,08,11. 
  * [--nanocomp]: (default:true) If provided, will perform nanocomp analysis
  * [--nanoplot]: (default:true) If provided, will perform nanoplot analysis
  * [--assemble]: (default:true) If provided, this will assemble the genomes using Flye
- * [--assembly_threads]: (default: 8) Number of threads per barcode 
- * If the assemble option is provided: here are some extra Flye parameters that can be submitted:
+   - [--t_assemble]: (default: 8) Number of threads per barcode 
+ * If the assemble option is provided: some extra Flye parameters that can be submitted:
    - [--gsize]: Expected genome size
    - [--meta]: Metagenome / Uneven coverage
    - [--plasmids]: rescue short unassembled plasmids
    - [--asm_coverage]: reduced coverage for initial disjointig assembly
- * [--mapping]: (default: true)
-
- 
-
-
-
+ * [--mapping]: (default: true) If provided, will map sort and index original reads against the assembly
+   - [--t_mapping]: (default: 3, minimap2 uses t+1 during mapping) Number of threads used for mapping
+ * [--polishing]: (default:4) If provided will polish sequences (requires mapping)
+   - [--t_polishing]: Number of threads used for polishing
+   - [--model]:(default: r941_min_fast_g303): Model used for Medaka polishing: {pore}_{device}_{caller variant}_{caller version}
+ * [--annotation]: (default:true) If provided, will anotate sequences
+   - [--t_polishing]: (default: 4) Number of threads used for annotation
 
 
