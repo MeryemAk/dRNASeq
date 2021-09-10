@@ -47,13 +47,13 @@ nextflow run assembly.nf --in_dir PATH --out_dir PATH
                          [--basecall][--barcode_kits][--bc_config][--skip_qc][--num_callers]
                          [--no_merge]
                          [--nanocomp][--nanoplot]
-                         [--assemble][--gsize][--meta][--plasmids][--asm_coverage][--assemblyP]
-                         [--mapping]
-                         [--polishing][--model][--trheads_polishing]
-                         [--annotation][--threads_annotation]
+                         [--assemble][--gsize][--meta][--plasmids][--asm_coverage][--t_assembly]
+                         [--mapping][--t_mapping]
+                         [--polishing][--model][--t_polishing]
+                         [--annotation][--t_annotation]
                          [--help]
- optional arguments:
-  --help 
+ 
+ For help: nextflow run assembly.nf --help
 ```
 
 ### Mandatory parameters
@@ -83,8 +83,8 @@ For the 3 types of input, the structure must be the following: <br>
  * [--barcodes]: (default:none) Comma separated list of barcode numbers that are expected, if barcodes are provided. Numbers should include the leading 0s. E.g. 03,08,11. 
  * [--nanocomp]: (default:true) If provided, will perform nanocomp analysis
  * [--nanoplot]: (default:true) If provided, will perform nanoplot analysis
- * [--assemble]: (default:true) If provided, this will assemble the genomes using Flye
-   - [--t_assemble]: (default: 8) Number of threads per barcode 
+ * [--assembly]: (default:true) If provided, this will assemble the genomes using Flye
+   - [--t_assembly]: (default: 8) Number of threads per barcode 
  * If the assemble option is provided: some extra Flye parameters that can be submitted:
    - [--gsize]: Expected genome size
    - [--meta]: Metagenome / Uneven coverage
@@ -96,6 +96,6 @@ For the 3 types of input, the structure must be the following: <br>
    - [--t_polishing]: Number of threads used for polishing
    - [--model]:(default: r941_min_fast_g303): Model used for Medaka polishing: {pore}_{device}_{caller variant}_{caller version}
  * [--annotation]: (default:true) If provided, will anotate sequences
-   - [--t_polishing]: (default: 4) Number of threads used for annotation
+   - [--t_annotation]: (default: 4) Number of threads used for annotation
 
 
