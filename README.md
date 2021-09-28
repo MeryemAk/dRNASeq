@@ -107,7 +107,7 @@ executor {
 ```
 The maximum memory is limited by default on 64 GB, but should be adjusted to personal computer characteristics.
 queueSize is limited to 5, which means that only 5 processes can be executed at once. If the default number of threads are used, this means that 20 (5x4) threads at once will be used. 
-The user can also queueSize with "cpus" if wanted. But keep in mind that this constraint concerns only the amount of logical cpus! Almost all the processes in the workflow are multithreaded. If cpus = 24 is used with the default settings, 96(24x4) threads can be used at once!
+The user can also replace queueSize with "cpus" if wanted. But keep in mind that this constraint concerns only the amount of logical cpus! Almost all the processes in the workflow are multithreaded. If cpus = 24 is used with the default settings, 96(24x4) threads can be used at once!
 
 ## Other remarks
 Each time Nextflow is executed, directories within the work directory are created where the processes run. Don't forget to delete this work direcotry regulary.
