@@ -61,7 +61,7 @@ Two parameters are mandatory:
 - in_dir: the input directory that contains the data that needed to be analysed
 - out_dir: the output directory that will contain the results
 
-3. types of input are possible:
+3 types of input are possible:
   1. FAST5 files
   2. FASTQ files (multiple FASTQ files that are not merged yet)
   3. A merged FASTQ file (one big FASTQ file per barcode/sample)
