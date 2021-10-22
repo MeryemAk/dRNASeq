@@ -493,7 +493,7 @@ process sort_bam {
     params.mapping
     
     """
-    samtools sort $x -o ${x.simpleName}_sorted
+    samtools sort $x -o ${x.simpleName}_sorted.bam
     """
 }
 
