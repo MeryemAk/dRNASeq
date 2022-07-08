@@ -375,7 +375,7 @@ process flye_assembly {
     output:
     path "*/*assembly*" optional true
     path "**.log" optional true
-    tuple file(fq), file("*/*assembly.fasta") optional true into (flye_prokka, flye_mapping)
+    tuple file(fq), file("*/*assembly.fasta") optional true into (flye_prokka, flye_mapping, flye_busco)
 
     when:
     params.flye_assembly
@@ -386,9 +386,10 @@ process flye_assembly {
     plasmids = params.plasmids ? "--plasmids" : ""
     coverage = params.asm_coverage ? "--asm-coverage $params.asm_coverage" : ""
     meta = params.meta ? "--meta" : ""
+    read_quality = params.nano_hq ? "--nano-hq" : "--nano-raw"
 
     """
-    flye --nano-raw $fq $gsize $coverage $plasmids $meta --out-dir ./${fq.simpleName} -t ${params.t_assembly} -i 5
+    flye $read_quality $fq $gsize $coverage $plasmids $meta --out-dir ./${fq.simpleName} -t ${params.t_assembly} -i 5
 
     # add bc on assembly.fasta
 	for file in ./${fq.simpleName}/assembly*; do
@@ -412,7 +413,7 @@ process miniasm_assembly {
 
     output:
     path "**" into miniasm_assembly
-    tuple file(fq), file("**/*.fasta") optional true into (miniasm_prokka, miniasm_mapping)
+    tuple file(fq), file("**/*.fasta") optional true into (miniasm_prokka, miniasm_mapping, miniasm_busco)
 
     when:
     params.miniasm_assembly
@@ -453,7 +454,7 @@ process mapping {
     params.mapping || params.polishing
     
     """
-    minimap2 -a $assembly $fq -t ${params.t_mapping} > ${fq.simpleName}.sam
+    minimap2 -ax map-ont $assembly $fq -t ${params.t_mapping} > ${fq.simpleName}.sam
     """
 }
 
@@ -552,7 +553,7 @@ process medaka {
 
     output:
     path "**.fasta" into medaka_result
-    tuple file(fq), file ("**consensus.fasta") into medaka_prokka
+    tuple file(fq), file ("**consensus.fasta") into (medaka_prokka, medaka_busco)
 
     when:
     params.polishing
@@ -566,12 +567,15 @@ process medaka {
 
 if (params.polishing) {
     prokka_tuple = medaka_prokka
+    busco_tuple = medaka_busco
 }
 else if (!params.polishing && params.flye_assembly) {
     prokka_tuple = flye_prokka
+    busco_tuple = flye_busco
 }
 else if (!params.polishing && params.miniasm_assembly) {
     prokka_tuple = miniasm_prokka
+    busco_tuple = flye_busco
 }
 
 process prokka_annotation {
@@ -594,11 +598,34 @@ process prokka_annotation {
     """
 }
 
+busco_collected = busco_tuple.combine(Channel.fromPath(params.busco_path))
+process busco {
+
+    label "busco"
+    containerOptions '-u $(id -u):$(id -g)'
+        
+    publishDir "${params.out_dir}/07.statistics/", mode: "copy"
+
+    input:
+    set file(fq), file(assembly), path(data) from busco_collected
+
+    output:
+    path "*" into busco_result
+
+    when:
+    params.busco
+
+    """
+    busco -m genome -i $assembly -o ./${fq.simpleName} -l ${params.lineage} --offline --download_path ${data} --cpu ${params.t_statistics}
+    """
+
+}
+
 process report {
 
     label "report"
 
-    publishDir "${params.out_dir}/07.report", mode: "copy"
+    publishDir "${params.out_dir}/08.report", mode: "copy"
 
     input:
     tuple file(fq), file(summary), file(histogram), file(quality) from nanoplot_report
@@ -713,6 +740,8 @@ process report {
     pdf.output('${fq.simpleName}.pdf', 'F')
     """
 }
+
+
 /* help */
 
 def helpMessage() {
@@ -771,6 +800,8 @@ def helpMessage() {
     ${c_cyan}assembly:${c_reset}                       | ${c_blue}Asssembly option${c_reset}
     • flye_assembly:                | ${c_yellow}If provided, this will assemble the genomes using Flye ${c_reset}
 	default:true
+    • nano_hq:                      | ${c_yellow}mode for ONT Guppy5+ (SUP mode) and Q20 reads (3-5% error rate)${c_reset}
+    default: true  
     • gsize:                        | ${c_yellow}Expected genome size (not mandatory) ${c_reset}
     • meta:                         | ${c_yellow}Metagenome / Uneven coverage${c_reset}
     • plasmids:                     | ${c_yellow}Rescue short unassembled plasmids${c_reset}
@@ -790,12 +821,17 @@ def helpMessage() {
     • t_polishing                   | ${c_yellow}Number of threads used for polishing ${c_reset}
    	default: 4
     • model:                        | ${c_yellow}Model used for Medaka polishing: {pore}_{device}_{caller variant}_{caller version} ${c_reset}
-        default: r941_min_fast_g303
-	    hac: r941_min_high_g360
+        default: "r941_min_hac_g507"
+	    sup + kit12: "r104_e81_sup_g5015"
 
     ${c_cyan}annotation:${c_reset}                     | ${c_blue}If provided, will anotate sequences ${c_reset}
    	default: true
     • t_annotation                  | ${c_yellow}Number of threads used for annotation ${c_reset} 
+        default: 4 
+
+    ${c_cyan}busco:${c_reset}                          | ${c_blue}If provided, will calculate BUSCO scores for the assembly ${c_reset}
+   	default: true
+    • t_statistics                  | ${c_yellow}Number of threads used for BUSCO ${c_reset} 
         default: 4 
  
     • help                          | ${c_yellow}Show this${c_reset}
@@ -865,6 +901,7 @@ def parameterShow() {
     if (params.flye_assembly) {
         text = text + """ ${c_yellow}${params.flye_assembly}${c_reset}
     • miniasm_assembly:             | ${c_yellow}${params.miniasm_assembly}${c_reset}
+    • nano_hq:                      | ${c_yellow}${params.nano_hq}${c_reset}
     • gsize:                        | ${c_yellow}${params.gsize}${c_reset}
     • meta:                         | ${c_yellow}${params.meta}${c_reset}
     • plasmids:                     | ${c_yellow}${params.plasmids}${c_reset}
@@ -927,6 +964,21 @@ def parameterShow() {
     }
     else {
 	text = text + """${c_yellow}${params.annotation}${c_reset}
+    
+    """
+    } 
+
+    text = text + """${c_cyan}Statistics:${c_reset}
+    • Busco:                        | """
+
+    if (params.busco) {
+	text = text + """${c_yellow}${params.busco}${c_reset}
+    • t_statistics:                 | ${c_yellow}${params.t_statistics}${c_reset} 
+
+    """
+    }
+    else {
+	text = text + """${c_yellow}${params.t_statistics}${c_reset}
     
     """
     } 
