@@ -55,7 +55,7 @@ nextflow run assembly.nf --in_dir PATH --out_dir PATH
 For help: nextflow run assembly.nf --help
 ```
 
-### Mandatory parameters
+## Mandatory parameters
 Two parameters are mandatory:
 - in_dir: the input directory that contains the data that needed to be analysed
 - out_dir: the output directory that will contain the results
