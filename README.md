@@ -89,8 +89,8 @@ Input should look like one of these examples:
    - [--t_annotation]: (default: 4) Number of threads used for annotation
  * Parameters related to assembly qc:
    - [--assembly_qc]: (default:true) If provided, will calculate BUSCO scores for the assembly
-   - [lineage]: (default: funi_odb10) Select taxonomic group to use  
-   - [busco_path]: (default: /data/databases/busco) Path to BUSCO db ${c_reset} 
+   - [--lineage]: (default: funi_odb10) Select taxonomic group to use  
+   - [--busco_path]: (default: /data/databases/busco) Path to BUSCO db ${c_reset} 
    - [--t_assembly_qc]: (default: 4) Number of threads used for BUSCO
 
 ## Config file
