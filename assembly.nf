@@ -477,7 +477,7 @@ def helpMessage() {
     ${c_cyan}General:${c_reset}                        | ${c_red}Must supply parameters${c_reset}
     • in_dir:                       | ${c_yellow}Input directory (directory with fastq folder)${c_reset}
     • out_dir:                      | ${c_yellow}Output directory for results${c_reset}
-                                    | ${c_red}Optional parameters${c_reset}
+                                    | ${c_red}optional parameters${c_reset}
     • barcodes:                     | ${c_yellow}Comma separated list of barcode numbers that the user wants to analyse if barcodes are present${c_reset}
                                     | ${c_yellow}All barcodes are automatically analysed if barcodes are present and the --barcodes parameter is not provided${c_reset}
                                     | ${c_yellow}Numbers should include the leading 0s. E.g. 03,08,11${c_reset}
@@ -518,8 +518,13 @@ def helpMessage() {
 
     ${c_cyan}assembly_qc:${c_reset}                    | ${c_blue}If provided, will calculate BUSCO scores for the assembly ${c_reset}
    	default: true
+	• lineage               		| ${c_yellow}Select taxonomic group to use  ${c_reset} 
+        default: fungi_odb10
+	• busco_path             		| ${c_yellow}Path to BUSCO db ${c_reset} 
+        default: /data/databases/busco
     • t_assembly_qc                 | ${c_yellow}Number of threads used for BUSCO ${c_reset} 
         default: 4 
+
  
     • help                          | ${c_yellow}Show this${c_reset}
                         
