@@ -1,21 +1,19 @@
 
 # Bacterial_assembly
-Nextflow script for assembly and annotation of bacterial genomes from Nanopore data. The workflow can be used on Linux or Windows. All the different tools run in different containers inside a Nextflow container, which makes the bacterial assembly workflow independent of the platform used. The container images used in the workflow are freely avalaible on the StaPH-B repository (https://hub.docker.com/u/staphb) or are custom made (https://hub.docker.com/u/bikc).
+Nextflow script for assembly, polishing, mapping, QC and annotation of bacterial genomes from Nanopore data. The workflow can be used on Linux or Windows. All the different tools run in different containers inside a Nextflow container (optional), which makes the bacterial assembly workflow independent of the platform used. The container images used in the workflow are freely avalaible on the StaPH-B repository (https://hub.docker.com/u/staphb) or are custom made (https://hub.docker.com/u/bikc).
 
 ## Tools used in the workflow
 
 ![image](https://user-images.githubusercontent.com/56390957/132333064-028d4052-c7d8-4c83-a90c-e12a76356a6e.png)
 
 * Nextflow https://www.nextflow.io/
-* Guppy basecaller (nanopore community)
 * Nanocomp https://github.com/wdecoster/nanocomp
 * Nanoplot https://github.com/wdecoster/NanoPlot
 * Flye https://github.com/fenderglass/Flye
-* Miniasm https://github.com/lh3/miniasm
 * Minimap2 https://github.com/lh3/minimap2
 * Samtools http://www.htslib.org/
-* Racon https://github.com/isovic/racon
 * Medaka https://github.com/nanoporetech/medaka
+* BUSCO https://busco.ezlab.org/
 * Prokka https://github.com/tseemann/prokka
 
 ## Possibilities
@@ -24,6 +22,7 @@ Nextflow script for assembly and annotation of bacterial genomes from Nanopore d
 - Mapping of original reads against the assembly
 - Polishing of assembly
 - Annotation of the assembly
+- QC control of the assembly
 
 ## Installation Linux
 ### Prerequisites
@@ -46,12 +45,13 @@ $ docker run -it --workdir $PWD -v /var/run/docker.sock:/var/run/docker.sock -v 
 ## Usage
 ```
 nextflow run assembly.nf --in_dir PATH --out_dir PATH
-                         [--no_merge]
-                         [--nanocomp][--nanoplot]
-                         [--assemble][--gsize][--meta][--plasmids][--asm_coverage][--t_assembly]
+                         [--barcodes]
+                         [--qc][--t_qc]
+                         [--nano_hq][--gsize][--meta]][--asm_coverage][--t_assembly]
                          [--mapping][--t_mapping]
                          [--polishing][--model][--t_polishing]
-                         [--annotation][--t_annotation]
+                         [--fast_annotation][--t_annotation]
+                         [--assembly_qc][--lineage][--busco_path][t_assembly_qc]
                          [--help]
  
 For help: nextflow run assembly.nf --help
