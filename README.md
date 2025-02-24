@@ -1,10 +1,10 @@
 
 # Bacterial_assembly
-Nextflow script for assembly, polishing, mapping, QC and annotation of bacterial genomes from Nanopore data. The workflow can be used on Linux or Windows. All the different tools run in different containers inside a Nextflow container (optional), which makes the bacterial assembly workflow independent of the platform used. The container images used in the workflow are freely avalaible on the StaPH-B repository (https://hub.docker.com/u/staphb) or are custom made (https://hub.docker.com/u/bikc).
+Nextflow script for assembly, polishing, mapping, QC and annotation of bacterial genomes from Nanopore data. The workflow can be used on Linux or Windows. All the different tools run in different containers inside a Nextflow container (optional), which makes the bacterial assembly workflow independent of the platform used. The container images used in the workflow are freely avalaible on the StaPH-B repository (https://hub.docker.com/u/staphb) or are custom made.
 
 ## Tools used in the workflow
 
-![image](https://user-images.githubusercontent.com/56390957/132333064-028d4052-c7d8-4c83-a90c-e12a76356a6e.png)
+<img src="images/Pipeline.JPG" alt="Beschrijving" width="800" style="display:block; margin-left:auto; margin-right:auto;"/>
 
 * Nextflow https://www.nextflow.io/
 * Nanocomp https://github.com/wdecoster/nanocomp
@@ -27,8 +27,6 @@ Nextflow script for assembly, polishing, mapping, QC and annotation of bacterial
 ## Installation Linux
 ### Prerequisites
 On Linux, only Docker is needed: the workflow is started from a Nextflow container. Users can also opt to install Nextflow (https://www.nextflow.io/docs/latest/getstarted.html).
-
-If you want to start the pipeline from FAST5 files, an account on Oxford Nanopore Technologies (ONT) is necessary to use Guppy. Guppy can then be easily implemented in the pipeline if the Docker image of Guppy is provided in de config file. Due to the terms and conditions of ONT, we are not allowed to redistribute Oxford Nanopore software. 
 
 ## Quick start
 1) Ensure that the assembly.nf script and the nextflow.config file are stored in a folder within your home directory. The data to be analyzed must also be placed in this folder. For details on the required input folder structure, refer to the mandatory parameters. If you don’t necessarily want to use Docker-in-Docker but still want to run Nextflow outside of a Docker container, you can skip this step and proceed to step 3
@@ -74,7 +72,7 @@ Input should look like one of these examples:
     - [--qc]: (default: true) If provided, will perform QC analysis (NanComp and NanoPlot)
     - [--t_qc]: (default: 4) Number of threads used for QC
  * Parameters related to assembly:
-   - [--nano_hq] (default: true) Mode for ONT Guppy5+ (SUP mode) and Q20 reads (3-5% error rate)
+   - [--nano_hq]: (default: true) Mode for ONT Guppy5+ (SUP mode) and Q20 reads (3-5% error rate)
    - [--gsize]: (default: none) Expected genome size
    - [--meta]: (default: false) Metagenome / Uneven coverage
    - [--asm_coverage]: (default: false) reduced coverage for initial disjointig assembly
@@ -85,12 +83,14 @@ Input should look like one of these examples:
 * Parameters related to polishing:
    - [--polishing]: (default: true) If provided will polish sequences (requires mapping)
    - [--t_polishing]: (default: 4)  Number of threads used for polishing
-   - [--model]:(default: auto selection): Model used for Medaka polishing: {pore}_{device}_{caller variant}_{caller version}, normally automatically selected by Medaka
+   - [--model]: (default: auto selection): Model used for Medaka polishing: {pore}_{device}_{caller variant}_{caller version}, normally automatically selected by Medaka
  * Parameters related to annotation:
    - [--annotation]: (default:true) If true, Prokka will be executed
    - [--t_annotation]: (default: 4) Number of threads used for annotation
  * Parameters related to assembly qc:
    - [--assembly_qc]: (default:true) If provided, will calculate BUSCO scores for the assembly
+   - [lineage]: (default: funi_odb10) Select taxonomic group to use  
+   - [busco_path]: (default: /data/databases/busco) Path to BUSCO db ${c_reset} 
    - [--t_assembly_qc]: (default: 4) Number of threads used for BUSCO
 
 ## Config file
@@ -114,17 +114,17 @@ The report, trace and timeline section in the config file generates reports add 
 
 ## Output
 The output is structured in the following way:
-1. basecalled (merged FASTQ files)
-2. QC (NanoPlot and/or NanoComp output)
-3. Assembly (Flye or Miniasm output)
-4. Mapping (files necessary for visualisation in IGV)
-5. Polishing (
-6. Annotation (Output from Prokka)
+01.preprocessed_data (merged and unzipped FASTQ files)
+02.qc (NanoPlot and NanoComp output)
+03.flye_assembly (Flye  output)
+04.mapped_reads (files necessary for visualisation in IGV)
+05.polishing (Polished genome)
+06.annotation (Output from Prokka)
+06.genome_qc (Output from BUSCO)
 
 
-Along with these outputdirectories, 3 Nextflow reports are also generated:
+Along with these outputdirectories, 2 Nextflow reports are also generated:
 - report: metrics about the workflow execution
-- trace: information about each process
 - timeline: timeline for all processes
 
 ## Other remarks
