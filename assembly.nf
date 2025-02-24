@@ -358,16 +358,15 @@ process prokka_annotation {
     publishDir "${params.out_dir}/06.annotation/prokka", mode: "copy"
 
     input:
-    path(assembly) 
+    tuple file(fq), file(assembly) 
 
     output:
     path "*"
 
     """
-    prokka --outdir ./${assembly.simpleName} --prefix ${assembly.simpleName} $assembly --cpus ${params.t_fast_annotation}
+    prokka --outdir ./${fq.simpleName} --prefix ${fq.simpleName} $assembly --cpus ${params.t_fast_annotation}
     """
 }
-
 
 process busco_qc{
 
@@ -427,9 +426,8 @@ workflow {
             initial_bam_files = initial_bam_processing(initial_sam_files.sam_output)
         }
         if (params.fast_annotation) {
-            prokka = prokka_annotation(draft_assembly.fasta_flye)
+            prokka = prokka_annotation(polished_assembly.fasta_medaka)
         }
-
         if (params.assembly_qc) {
             busco_tuple = draft_assembly.fasta_flye.combine(Channel.fromPath(params.busco_path))
             busco = busco_qc(busco_tuple)
@@ -455,7 +453,6 @@ def parameterShow() {
     c_gray = params.monochrome_logs ? '' : "\033[0;241m"
 }
 
-
 def helpMessage() {
 
     // Log colors ANSI codes
@@ -477,12 +474,10 @@ def helpMessage() {
     ==================================================
     Parameters:
 
-    ${c_cyan}General:${c_reset}                        
-                                    | ${c_red}Must supply parameters${c_reset}
-
+    ${c_cyan}General:${c_reset}                        | ${c_red}Must supply parameters${c_reset}
     • in_dir:                       | ${c_yellow}Input directory (directory with fastq folder)${c_reset}
     • out_dir:                      | ${c_yellow}Output directory for results${c_reset}
-                                                       | ${c_red}optional parameters${c_reset}
+                                    | ${c_red}Optional parameters${c_reset}
     • barcodes:                     | ${c_yellow}Comma separated list of barcode numbers that the user wants to analyse if barcodes are present${c_reset}
                                     | ${c_yellow}All barcodes are automatically analysed if barcodes are present and the --barcodes parameter is not provided${c_reset}
                                     | ${c_yellow}Numbers should include the leading 0s. E.g. 03,08,11${c_reset}
@@ -491,17 +486,17 @@ def helpMessage() {
     ${c_cyan}QC:${c_reset}                             | ${c_blue}Quality Control steps${c_reset}
     • qc:                           | ${c_yellow}If provided, will perform QC analysis (NanComp and NanoPlot) ${c_reset}
 	default: true  
-    • t_qc      	 	            | ${c_yellow}Number of threads used for QC${c_reset}
-	default: 4   
+    • t_qc                          | ${c_yellow}Number of threads used for QC${c_reset}
+	default: 4
+
     ${c_cyan}assembly:${c_reset}                       | ${c_blue}Asssembly option${c_reset}
-    • nano_hq:                      | ${c_yellow}mode for ONT Guppy5+ (SUP mode) and Q20 reads (3-5% error rate)${c_reset}
+    • nano_hq:                      | ${c_yellow}Mode for ONT Guppy5+ (SUP mode) and Q20 reads (3-5% error rate)${c_reset}
     default: true  
     • gsize:                        | ${c_yellow}Expected genome size (not mandatory) ${c_reset}
     • meta:                         | ${c_yellow}Metagenome / Uneven coverage ${c_reset}
-    • asm_coverage:                 | ${c_yellow}Reduced coverage for initial disjointig assembl${c_reset}
-    • t_assembly	 	            | ${c_yellow}Number of threads per barcode (use max: 32/nbarcodes) ${c_reset}
+    • asm_coverage:                 | ${c_yellow}Reduced coverage for initial disjointig assembly${c_reset}
+    • t_assembly                    | ${c_yellow}Number of threads per barcode (use max: 32/nbarcodes) ${c_reset}
 	default: 4   
-
 
     ${c_cyan}mapping:${c_reset}                        | ${c_blue}If provided, will map, sort and index sequences ${c_reset}
 	default: true
@@ -512,18 +507,18 @@ def helpMessage() {
 	default: true   
     • t_polishing                   | ${c_yellow}Number of threads used for polishing ${c_reset}
    	default: 4
-    • model:                        | ${c_yellow}Model used for Medaka polishing: {pore}_{device}_{caller variant}_{caller version} ${c_reset}
+    • model:                        | ${c_yellow}Model used for Medaka polishing: {pore}_{device}_{caller variant}_{caller version} f.ex. r104_e81_sup_g5015 ${c_reset}
                                     | ${c_yellow}Normally automatically selected by Medaka ${c_reset}
-	    sup + kit12: "r104_e81_sup_g5015"
+	    
 
     ${c_cyan}annotation:${c_reset}                     | ${c_blue}Annotation options${c_reset}
     • fast_annotation               | ${c_yellow} If true, Prokka will be executed ${c_reset}
-    • t_fast_annotation                  | ${c_yellow}Number of threads used for annotation ${c_reset} 
+    • t_fast_annotation             | ${c_yellow}Number of threads used for annotation ${c_reset} 
         default: 4 
 
     ${c_cyan}assembly_qc:${c_reset}                    | ${c_blue}If provided, will calculate BUSCO scores for the assembly ${c_reset}
    	default: true
-    • t_assembly_qc               | ${c_yellow}Number of threads used for BUSCO ${c_reset} 
+    • t_assembly_qc                 | ${c_yellow}Number of threads used for BUSCO ${c_reset} 
         default: 4 
  
     • help                          | ${c_yellow}Show this${c_reset}
@@ -534,4 +529,3 @@ def helpMessage() {
     """
 
 }
-
