@@ -31,8 +31,8 @@ On Linux, only Docker is needed: the workflow is started from a Nextflow contain
 If you want to start the pipeline from FAST5 files, an account on Oxford Nanopore Technologies (ONT) is necessary to use Guppy. Guppy can then be easily implemented in the pipeline if the Docker image of Guppy is provided in de config file. Due to the terms and conditions of ONT, we are not allowed to redistribute Oxford Nanopore software. 
 
 ## Quick start
-1) Make sure that the assembly.nf script and the nextflow.config file are in a folder inside your home directory. The data that will be analysed also needs to be in this folder (for more details on de structure of the input folder, see mandatory parameters). 
-2) Pull the Docker image of Nextflow from Dockerhub. This is only necesssary the first time the workflow is used. If you already pulled the image, you can proceed to step 3.
+1) Ensure that the assembly.nf script and the nextflow.config file are stored in a folder within your home directory. The data to be analyzed must also be placed in this folder. For details on the required input folder structure, refer to the mandatory parameters. If you don’t necessarily want to use Docker-in-Docker but still want to run Nextflow outside of a Docker container, you can skip this step and proceed to step 3
+2) Before running the workflow for the first time, pull the Nextflow Docker image from Docker Hub. If you have already downloaded the image, you can skip this step and proceed to step 3.
 ```
 $ docker pull nextflow/nextflow:21.04.3
 ```
@@ -40,7 +40,7 @@ $ docker pull nextflow/nextflow:21.04.3
 ```
 $ docker run -it --workdir $PWD -v /var/run/docker.sock:/var/run/docker.sock -v $HOME/"nameoffolder":$HOME/"nameoffolder" nextflow/nextflow:21.04.3 /bin/bash 
 ```
-3) Now you are in the Nextflow container and the workflow can be executed. All the different tools run in different containers. These will be pulled automatically (when you don't have them yet locally) when the corresponding process in Nextflow is started.
+3) You are now inside the Nextflow container, and the workflow is ready to be executed. Each tool runs in its own separate container, which will be automatically pulled if it is not already available locally when the corresponding process in Nextflow starts.
 
 ## Usage
 ```
@@ -62,7 +62,7 @@ Two parameters are mandatory:
 - in_dir: the input directory that contains the data that needed to be analysed
 - out_dir: the output directory that will contain the results
 
-3 types of input are possible:
+Input should look like one of these examples:
   1. FAST5 files
   2. FASTQ files (multiple FASTQ files that are not merged yet)
   3. A merged FASTQ file (one big FASTQ file per barcode/sample)
