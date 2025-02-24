@@ -114,13 +114,13 @@ The report, trace and timeline section in the config file generates reports add 
 
 ## Output
 The output is structured in the following way:
-01.preprocessed_data (merged and unzipped FASTQ files)
-02.qc (NanoPlot and NanoComp output)
-03.flye_assembly (Flye  output)
-04.mapped_reads (files necessary for visualisation in IGV)
-05.polishing (Polished genome)
-06.annotation (Output from Prokka)
-06.genome_qc (Output from BUSCO)
+- 01.preprocessed_data (merged and unzipped FASTQ files)
+- 02.qc (NanoPlot and NanoComp output)
+- 03.flye_assembly (Flye  output)
+- 04.mapped_reads (files necessary for visualisation in IGV)
+- 05.polishing (Polished genome)
+- 06.annotation (Output from Prokka)
+- 07.genome_qc (Output from BUSCO)
 
 
 Along with these outputdirectories, 2 Nextflow reports are also generated:
