@@ -18,4 +18,8 @@ conda install -c bioconda subread         # Counting
 ```bash
 conda install python=3.10
 conda install -c bioconda samtools    # Redownload Samtools
+```  
+3. Check if all tools installed through
+```bash
+conda list | grep toolname
 ```
