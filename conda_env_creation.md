@@ -7,11 +7,11 @@ conda config --show channels       # Should show bioconda, conda-forge and defau
 ```
 2. Install tools
 ``` bash
-conda install -c bioconda fastqc
-conda install -c bioconda trimmomatic
-conda install -c bioconda #mappingtool?
-conda install -c bioconda samtools
-conda install -c bioconda #countingtool?
+conda install -c bioconda fastqc          # Quality control
+conda install -c bioconda trimmomatic     # Trimming
+conda install -c bioconda #mappingtool?   # Mapping
+conda install -c bioconda samtools        # Sorting and indexing
+conda install -c bioconda subread         # Counting
 ```  
 ! error with samtools? --> downgrade python to version 3.10 with following command:
 ```bash
