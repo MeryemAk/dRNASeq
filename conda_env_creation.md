@@ -9,7 +9,8 @@ conda config --show channels       # Should show bioconda, conda-forge and defau
 ``` bash
 conda install -c bioconda fastqc          # Quality control
 conda install -c bioconda trimmomatic     # Trimming
-conda install -c bioconda #mappingtool?   # Mapping
+conda install -c bioconda bowtie2         # Mapping
+conda install -c bioconda hisat2          # Mapping
 conda install -c bioconda samtools        # Sorting and indexing
 conda install -c bioconda subread         # Counting
 ```  
