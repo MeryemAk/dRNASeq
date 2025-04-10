@@ -19,11 +19,10 @@ Run the setup script to install Miniconda and initialize the environment:
 ```bash
 ./linux_setup.sh -h   # View help message first
 ./linux_setup.sh      # Run setup
-
+```
 ## 🧪 FastQC
 
 Run the `2_fastqc.py` script to perform quality control on all sequences
-
 
 ```bash
 python 2_fastqc.py
