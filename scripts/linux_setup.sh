@@ -12,7 +12,7 @@ Before running this script... \n
 \t \t \$ sudo dnf update \n
 \t This will ensure that the software installed will be up-to-date. \n
 \n
-\t 2. Ensure the GitHub environment directory is in the home directory. \n
+\t 2. Ensure the yaml file location on line 84 is correct. \n
 \n
 Optional arguments: \n
 \t      -h | --help\t         show help text and exit \n
@@ -33,23 +33,14 @@ cd ~
 
 echo Checking if the GitHub environment is already installed...
 sleep 2s # Slows down script to make terminal output more readable
-if [ -d ~/miniconda/envs/githubenv ]; then 
+if [ -d ~/miniconda/envs/dRNASeq ]; then 
 	echo The GitHub environment already exists, exiting script.
 	exit 0
 fi
 
-echo Checking if GitHub environment  is in the home directory...
-sleep 2s # Slows down script to make terminal output more readable
-# If githubenv/ is not in the home directory...
-if [ ! -d ~/githubenv/ ];
-then
-	echo ERROR: GitHub environment is not in the home directory
-	echo The home directory is $HOME
-	echo Please move the GitHub environment directory to the home directory,
-	echo or create a copy of the GitHub environment in $HOME
-	exit 1
-fi
-
+#########################################################################################
+# DOWNLOAD MINICONDA
+#########################################################################################
 echo Downloading Miniconda3 installation script...
 sleep 2s # Slows down script to make terminal output more readable
 # Check if Miniconda is installed
@@ -91,28 +82,57 @@ echo Displaying information about current conda installation...
 sleep 2s # Slows down script to make terminal output more readable
 conda info -a
 
-echo Creating the GitHub virtual environment using conda...
+#########################################################################################
+# IMPORT GITHUB REPO
+#########################################################################################
+echo Downloading dRNASeq GitHub repository...
 sleep 2s # Slows down script to make terminal output more readable
-if [ -f ~/path/to/GitHub/environment ]; then
-    conda create --name environment_name --file ~/path/to/GitHub/environment
-    if [ $? -ne 0 ]; then
-        echo "ERROR: Failed to create the Conda environment."
-        exit 1
-    fi
-else
-    echo "ERROR: Environment file not found at ~/path/to/GitHub/environment"
+
+repo_url="https://github.com/MeryemAk/dRNASeq/archive/refs/heads/main.zip"
+repo_zip="dRNASeq.zip"
+repo_dir="dRNASeq"
+
+# Download the repository as a zip file
+wget -O "$repo_zip" "$repo_url"
+if [ $? -ne 0 ]; then
+    echo "ERROR: Failed to download the GitHub repository from $repo_url."
     exit 1
 fi
 
-echo Removing unused packages and caches using conda...
-sleep 2s # Slows down script to make terminal output more readable
-conda clean --all --yes
+# Extract the repository
+unzip -o "$repo_zip"
+if [ $? -ne 0 ]; then
+    echo "ERROR: Failed to extract the GitHub repository."
+    exit 1
+fi
 
+# Remove the zip file after extraction
+rm "$repo_zip"
+
+# Path to the extracted YAML file
+env_file="./$repo_dir/environment.yaml"
+
+# Check if the YAML file exists
+if [ -f "$env_file" ]; then
+    echo "Found environment.yaml. Importing the Conda environment..."
+    conda env create -f "$env_file"
+    if [ $? -ne 0 ]; then
+        echo "ERROR: Failed to import the Conda environment from $env_file."
+        exit 1
+    fi
+else
+    echo "ERROR: environment.yaml file not found in the extracted repository."
+    exit 1
+fi
+
+#########################################################################################
+# END SCRIPT
+#########################################################################################
 echo -e Script finished! \n
 
 echo -e Please restart the terminal session for these changes to take effect. \n
 
-echo The GitHub environment can be activated using the command...
-echo -e	"\t \$ conda activate environment_name"
+echo The dRNASeq environment can be activated using the command...
+echo -e	"\t \$ conda activate dRNASeq"
 echo A conda virtual environment can be deactivated using the command...
 echo -e	"\t \$ conda deactivate"
