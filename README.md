@@ -8,9 +8,8 @@ Scripts are numbered in the order of execution:
 
 1. `1_linuxsetup.sh` – Sets up Miniconda and creates the required Conda environment.  
     Can be executed manually by following the `manual_setup_linux.txt` document.
-3. `2_fastqc.py` – Runs quality control checks
-4. `script_2.py` – ...
-5. ...
+2. `2_fastqc.py` – Runs quality control checks
+3. ...
 
 ## 🛠️ Installation
 
