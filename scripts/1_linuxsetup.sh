@@ -66,7 +66,7 @@ fi
 
 echo Setting up Miniconda3...
 sleep 2s # Slows down script to make terminal output more readable
-source "$HOME/miniconda/etc/profile.d/conda.sh"
+source "$HOME/miniconda3/etc/profile.d/conda.sh"
 hash -r # Refresh the terminal after installation
 conda config --set always_yes yes --set changeps1 yes \
 	--set auto_activate_base false # Answer "yes" to all prompts
