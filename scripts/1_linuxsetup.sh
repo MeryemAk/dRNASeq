@@ -8,11 +8,10 @@ the virtual environment from GitHub.
 \n
 Before running this script... \n
 \n
-\t 1. Please run the following command:  \n
+\t Please run the following command:  \n
 \t \t \$ sudo dnf update \n
 \t This will ensure that the software installed will be up-to-date. \n
 \n
-\t 2. Ensure the yaml file location on line 84 is correct. \n
 \n
 Optional arguments: \n
 \t      -h | --help\t         show help text and exit \n
@@ -88,7 +87,7 @@ conda info -a
 echo Downloading dRNASeq GitHub repository...
 sleep 2s # Slows down script to make terminal output more readable
 
-repo_url="https://github.com/MeryemAk/dRNASeq/archive/refs/heads/main.zip"
+repo_url="https://github.com/MeryemAk/dRNASeq.zip"
 repo_zip="dRNASeq.zip"
 repo_dir="dRNASeq"
 
