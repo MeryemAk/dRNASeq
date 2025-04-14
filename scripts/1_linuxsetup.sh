@@ -87,26 +87,7 @@ conda info -a
 echo Downloading dRNASeq GitHub repository...
 sleep 2s # Slows down script to make terminal output more readable
 
-repo_url="https://github.com/MeryemAk/dRNASeq.zip"
-repo_zip="dRNASeq.zip"
 repo_dir="dRNASeq"
-
-# Download the repository as a zip file
-wget -O "$repo_zip" "$repo_url"
-if [ $? -ne 0 ]; then
-    echo "ERROR: Failed to download the GitHub repository from $repo_url."
-    exit 1
-fi
-
-# Extract the repository
-unzip -o "$repo_zip"
-if [ $? -ne 0 ]; then
-    echo "ERROR: Failed to extract the GitHub repository."
-    exit 1
-fi
-
-# Remove the zip file after extraction
-rm "$repo_zip"
 
 # Path to the extracted YAML file
 env_file="./$repo_dir/environment.yaml"
