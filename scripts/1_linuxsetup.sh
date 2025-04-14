@@ -1,4 +1,4 @@
-#! /bin/bash/
+#!/bin/bash
 
 # Help/usage text
 usage="$(basename "$0") \n
