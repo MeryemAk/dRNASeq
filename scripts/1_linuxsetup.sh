@@ -32,7 +32,7 @@ cd ~
 
 echo Checking if the Conda environment is already installed...
 sleep 2s # Slows down script to make terminal output more readable
-if [ -d ~/miniconda/envs/dRNAseq ]; then 
+if [ -d ~/miniconda3/envs/dRNAseq ]; then 
 	echo The Conda environment already exists, exiting script.
 	exit 0
 else
