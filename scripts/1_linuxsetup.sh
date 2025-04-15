@@ -30,13 +30,13 @@ done
 # Changing directory to the home directory
 cd ~
 
-echo Checking if the GitHub environment is already installed...
+echo Checking if the Conda environment is already installed...
 sleep 2s # Slows down script to make terminal output more readable
 if [ -d ~/miniconda/envs/dRNASeq ]; then 
-	echo The GitHub environment already exists, exiting script.
+	echo The Conda environment already exists, exiting script.
 	exit 0
 else
-    echo The GitHub environment does not exist, continuing with script.
+    echo The Conda environment does not exist, continuing with script.
 fi
 
 #########################################################################################
@@ -83,7 +83,7 @@ else
 fi
 
 #########################################################################################
-# IMPORT GITHUB REPO
+# DOWNLOAD CONDA ENVIRONMENT
 #########################################################################################
 echo Finding environment.yml file in the dRNASeq repository...
 sleep 2s # Slows down script to make terminal output more readable
@@ -91,7 +91,7 @@ sleep 2s # Slows down script to make terminal output more readable
 repo_dir="dRNASeq"
 
 # Path to the extracted YAML file
-env_file="~/$repo_dir/environment.yml"
+env_file="$HOME/$repo_dir/environment.yml"
 
 # Check if the YAML file exists
 if [ -f "$env_file" ]; then
