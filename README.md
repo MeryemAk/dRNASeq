@@ -15,6 +15,7 @@ Nextflow script for assembly, polishing, mapping, QC and annotation of bacterial
 * Medaka https://github.com/nanoporetech/medaka
 * BUSCO https://busco.ezlab.org/
 * Prokka https://github.com/tseemann/prokka
+* PGAP https://github.com/ncbi/pgap
 
 ## Possibilities
 - QC control of the reads
@@ -48,7 +49,8 @@ nextflow run assembly.nf --in_dir PATH --out_dir PATH
                          [--nano_hq][--gsize][--meta]][--asm_coverage][--t_assembly]
                          [--mapping][--t_mapping]
                          [--polishing][--model][--t_polishing]
-                         [--fast_annotation][--t_annotation]
+                         [--fast_annotation][--t_fast_annotation]
+                         [--accurate_annotation][--pgap_path][--pgap_version][--organism][--ignore_errors][--t_accurate_annotation]
                          [--assembly_qc][--lineage][--busco_path][t_assembly_qc]
                          [--help]
  
@@ -85,8 +87,14 @@ Input should look like one of these examples:
    - [--t_polishing]: (default: 4)  Number of threads used for polishing
    - [--model]: (default: auto selection): Model used for Medaka polishing: {pore}_{device}_{caller variant}_{caller version}, normally automatically selected by Medaka
  * Parameters related to annotation:
-   - [--annotation]: (default:true) If true, Prokka will be executed
-   - [--t_annotation]: (default: 4) Number of threads used for annotation
+   - [--fast_annotation]: (default:true) If true, Prokka will be executed
+   - [--t_fast_annotation]: (default: 4) Number of threads used for Prokka annotation
+   - [--accurate_annotation]: (default:true) If true, PGAP will be executed
+   - [--pgap_path]: (default:/mnt/drive3/tools/pgap/2024-07-18) Path to PGAP installation files 
+   - [--pgap_version]: (default: 2024-07-18.build7555) Version of PGAP to use 
+   - [--organism]: (f.ex: organism = "escherichia_coli) "Scientific name of the organism (necesarry for PGAP annotation)
+   - [--ignore_errors] (default: false) Option to continue running the pipeline even if errors occur 
+   - [--t_accurate_annotation]: (default: 4) Number of threads used for PGAP annotation
  * Parameters related to assembly qc:
    - [--assembly_qc]: (default:true) If provided, will calculate BUSCO scores for the assembly
    - [--lineage]: (default: funi_odb10) Select taxonomic group to use  
@@ -119,7 +127,7 @@ The output is structured in the following way:
 - 03.flye_assembly (Flye  output)
 - 04.mapped_reads (files necessary for visualisation in IGV)
 - 05.polishing (Polished genome)
-- 06.annotation (Output from Prokka)
+- 06.annotation (Output from Prokka and/or PGAP)
 - 07.genome_qc (Output from BUSCO)
 
 
