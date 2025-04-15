@@ -113,7 +113,7 @@ echo -e Script finished! \n
 
 echo -e Please restart the terminal session for these changes to take effect. \n
 
-echo The dRNASeq environment can be activated using the command...
-echo -e	"\t \$ conda activate dRNASeq"
+echo The dRNAseq environment can be activated using the command...
+echo -e	"\t \$ conda activate dRNAseq"
 echo A conda virtual environment can be deactivated using the command...
 echo -e	"\t \$ conda deactivate"
