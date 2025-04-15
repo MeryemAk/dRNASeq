@@ -20,9 +20,9 @@ Run the setup script to install Miniconda and initialize the environment:
 ### 📋 Download samples from SRA (optional)  
 The script allows the user to automatically download all samples in fastq.gz format with the fastq-dump tool from the sra-toolkit package.  
 The script uses 3 command line arguments:  
-    1. Path to the file containing SRR accession numbers (one per line).
-    2. Specify 'SE' for single-end reads or 'PE' for paired-end reads.
-    3. Path to the output directory
+1. Path to the file containing SRR accession numbers (one per line).
+2. Specify 'SE' for single-end reads or 'PE' for paired-end reads.
+3. . Path to the output directory
 
 ```bash
 python3 2.1_SRR_download.py <accession_file> <SE|PE> [work_dir]
