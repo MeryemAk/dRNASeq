@@ -35,6 +35,8 @@ sleep 2s # Slows down script to make terminal output more readable
 if [ -d ~/miniconda/envs/dRNASeq ]; then 
 	echo The GitHub environment already exists, exiting script.
 	exit 0
+else
+    echo The GitHub environment does not exist, continuing with script.
 fi
 
 #########################################################################################
@@ -44,8 +46,7 @@ echo Downloading Miniconda3 installation script...
 sleep 2s # Slows down script to make terminal output more readable
 # Check if Miniconda is installed
 if command -v conda &> /dev/null; then
-	echo Miniconda3 is already installed, exiting script.
-	exit 0
+	echo Miniconda3 is already installed.
 else
 	mkdir -p ~/miniconda3 # Create Miniconda directory where installation will occur
 	
@@ -62,46 +63,46 @@ else
     fi
 
 	rm ~/miniconda3/miniconda.sh # Remove the script
+
+    echo Setting up Miniconda3...
+    sleep 2s # Slows down script to make terminal output more readable
+    source "$HOME/miniconda3/etc/profile.d/conda.sh"
+    hash -r # Refresh the terminal after installation
+    conda config --set always_yes yes --set changeps1 yes \
+        --set auto_activate_base false # Answer "yes" to all prompts
+    conda update -q conda # Update conda for newer versions (if available)
+
+    #Initialize conda for the shell if it hasn't been done already
+    if ! grep -q "conda initialize" ~/.bashrc; then
+        conda init
+    fi
+
+    echo Displaying information about current conda installation...
+    sleep 2s # Slows down script to make terminal output more readable
+    conda info -a
 fi
-
-echo Setting up Miniconda3...
-sleep 2s # Slows down script to make terminal output more readable
-source "$HOME/miniconda3/etc/profile.d/conda.sh"
-hash -r # Refresh the terminal after installation
-conda config --set always_yes yes --set changeps1 yes \
-	--set auto_activate_base false # Answer "yes" to all prompts
-conda update -q conda # Update conda for newer versions (if available)
-
-#Initialize conda for the shell if it hasn't been done already
-if ! grep -q "conda initialize" ~/.bashrc; then
-    conda init
-fi
-
-echo Displaying information about current conda installation...
-sleep 2s # Slows down script to make terminal output more readable
-conda info -a
 
 #########################################################################################
 # IMPORT GITHUB REPO
 #########################################################################################
-echo Downloading dRNASeq GitHub repository...
+echo Finding environment.yml file in the dRNASeq repository...
 sleep 2s # Slows down script to make terminal output more readable
 
 repo_dir="dRNASeq"
 
 # Path to the extracted YAML file
-env_file="./$repo_dir/environment.yaml"
+env_file="~/$repo_dir/environment.yml"
 
 # Check if the YAML file exists
 if [ -f "$env_file" ]; then
-    echo "Found environment.yaml. Importing the Conda environment..."
+    echo "Found file in $env_file. Importing the Conda environment..."
     conda env create -f "$env_file"
     if [ $? -ne 0 ]; then
         echo "ERROR: Failed to import the Conda environment from $env_file."
         exit 1
     fi
 else
-    echo "ERROR: environment.yaml file not found in the extracted repository."
+    echo "ERROR: environment.yml file not found in the repository."
     exit 1
 fi
 
