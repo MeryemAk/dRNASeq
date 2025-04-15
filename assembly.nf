@@ -109,12 +109,9 @@ if (error) {
 }
 
 
-
 // processes //
 /* preprocess data involves merging the fastq files per barcode and unzipping the FASTQ files if necessary */
 process preprocess {
-
-    label "bash"
 
     publishDir "${params.out_dir}/01.preprocessed_data/", mode: "copy"
 
@@ -220,7 +217,6 @@ process nanocomp_QC {
 }
 
 process flye_assembly {
-    /* nadenken over errorstragegy*/
         
     label "flye"
         
@@ -233,6 +229,7 @@ process flye_assembly {
     path "**.log" 
     path "*/*assembly*" 
     tuple file(fq), file("*/*assembly.fasta"), emit: fasta_flye
+    path("*/*assembly.fasta"), emit: fasta_flye_annot
 
     script:
 
@@ -302,6 +299,7 @@ process medaka_polishing {
 
     output:
     tuple file(fq), file ("**consensus.fasta"), emit: fasta_medaka
+    path ("**consensus.fasta"), emit: fasta_medaka_annot
 
     script:
 
@@ -358,15 +356,42 @@ process prokka_annotation {
     publishDir "${params.out_dir}/06.annotation/prokka", mode: "copy"
 
     input:
-    tuple file(fq), file(assembly) 
+    path(assembly) 
 
     output:
     path "*"
 
     """
-    prokka --outdir ./${fq.simpleName} --prefix ${fq.simpleName} $assembly --cpus ${params.t_fast_annotation}
+    prokka --outdir ./${assembly.simpleName} --prefix ${assembly.simpleName} $assembly --cpus ${params.t_fast_annotation}
     """
 }
+
+process pgap_annotation {
+
+    label "pgap"
+
+    publishDir "${params.out_dir}/06.annotation/pgap", mode: "copy"
+
+    input:
+    path(assembly)
+
+    output:
+    path "*"
+
+    script:
+    errors = params.ignore_errors ? "--ignore-all-errors" : ""
+
+    """
+    cp ${assembly} ${params.organism}.fasta
+
+    create_yaml.py ${params.organism}
+
+    python ${params.pgap_path}/pgap.py -n $errors --no-self-update -o ./PGAP --use-version ${params.pgap_version} ./${params.organism}.yaml --cpus ${params.t_accurate_annotation}
+
+    """
+
+}
+
 
 process busco_qc{
 
@@ -386,6 +411,8 @@ process busco_qc{
     """
 
 }
+
+
 
 
 // Workflow //
@@ -413,8 +440,13 @@ workflow {
             remapped_bam_files = remapped_bam_processing(remapped_sam_files.sam_output)
         }
         if (params.fast_annotation) {
-            prokka = prokka_annotation(polished_assembly.fasta_medaka)
+            prokka = prokka_annotation(polished_assembly.fasta_medaka_annot)
         }
+
+        if (params.accurate_annotation) {
+            pgap = pgap_annotation(polished_assembly.fasta_medaka_annot)
+        }
+
         if (params.assembly_qc) {
             busco_tuple = polished_assembly.fasta_medaka.combine(Channel.fromPath(params.busco_path))
             busco = busco_qc(busco_tuple)
@@ -426,8 +458,13 @@ workflow {
             initial_bam_files = initial_bam_processing(initial_sam_files.sam_output)
         }
         if (params.fast_annotation) {
-            prokka = prokka_annotation(polished_assembly.fasta_medaka)
+            prokka = prokka_annotation(draft_assembly.fasta_flye_annot)
         }
+
+        if (params.accurate_annotation) {
+            pgap = pgap_annotation(draft_assembly.fasta_flye_annot)
+        }
+
         if (params.assembly_qc) {
             busco_tuple = draft_assembly.fasta_flye.combine(Channel.fromPath(params.busco_path))
             busco = busco_qc(busco_tuple)
@@ -451,8 +488,56 @@ def parameterShow() {
     c_red = params.monochrome_logs ? '' : "\033[0;31m";
     c_orange = params.monochrome_logs ? '' : "\033[0;202m";
     c_gray = params.monochrome_logs ? '' : "\033[0;241m"
-}
 
+
+    return """\
+     ==================================================
+     Provided parameters:
+ 
+     ${c_cyan}General:${c_reset} 
+     • in_dir:                       | ${c_yellow}${params.in_dir}${c_reset}
+     • out_dir:                      | ${c_yellow}${params.out_dir}${c_reset}
+     • barcodes:                     | ${c_yellow}${params.barcodes} ${c_reset}
+
+
+     ${c_cyan}QC:${c_reset}
+     • qc:                           | ${c_yellow}${params.qc}${c_reset}
+     • t_qc:                         | ${c_yellow}${params.t_qc} ${c_reset}
+
+
+    ${c_cyan}assembly:${c_reset}                      
+    • nano_hq:                      | ${c_yellow}${params.nano_hq}${c_reset}
+    • gsize:                        | ${c_yellow}${params.gsize}${c_reset}
+    • meta:                         | ${c_yellow}${params.meta}${c_reset}
+    • asm_coverage:                 | ${c_yellow}${params.asm_coverage}${c_reset}
+    • t_assembly                    | ${c_yellow}${params.t_assembly}${c_reset}
+
+    ${c_cyan}mapping:${c_reset}                         | ${c_blue}${params.mapping}${c_reset}
+    • t_mapping                     | ${c_yellow}${params.t_mapping}${c_reset}
+
+
+    ${c_cyan}polishing:${c_reset}                       | ${c_blue}${params.polishing}${c_reset}
+    • t_polishing                   | ${c_yellow}${params.t_polishing}${c_reset}
+    • model:                        | ${c_yellow}${params.t_polishing}${c_reset}
+
+    ${c_cyan}annotation:${c_reset}    
+    • fast_annotation               | ${c_yellow}${params.fast_annotation}${c_reset}
+    • t_fast_annotation             | ${c_yellow}${params.t_fast_annotation}${c_reset} 
+    • accurate_annotation           | ${c_yellow}${params.accurate_annotation}${c_reset}
+    • t_accurate_annotation         | ${c_yellow}${params.t_accurate_annotation}${c_reset} 
+    • pgap_path                     | ${c_yellow}${params.pgap_path}${c_reset} 
+    • pgap_version                  | ${c_yellow}${params.pgap_version}${c_reset} 
+    • organism                      | ${c_yellow}${params.organism}${c_reset} 
+    • ignore_errors                 | ${c_yellow}${params.ignore_errors}${c_reset} 
+
+    ${c_cyan}assembly_qc:${c_reset}                     | ${c_blue}${params.assembly_qc}${c_reset}
+    • t_assembly_qc                 | ${c_yellow}${params.t_assembly_qc}${c_reset} 
+    • lineage                       | ${c_yellow}${params.lineage}${c_reset} 
+    • busco_path                    | ${c_yellow}${params.busco_path}${c_reset} 
+
+    ==================================================
+     """
+}
 def helpMessage() {
 
     // Log colors ANSI codes
@@ -477,7 +562,7 @@ def helpMessage() {
     ${c_cyan}General:${c_reset}                        | ${c_red}Must supply parameters${c_reset}
     • in_dir:                       | ${c_yellow}Input directory (directory with fastq folder)${c_reset}
     • out_dir:                      | ${c_yellow}Output directory for results${c_reset}
-                                    | ${c_red}optional parameters${c_reset}
+                                    | ${c_red}Optional parameters${c_reset}
     • barcodes:                     | ${c_yellow}Comma separated list of barcode numbers that the user wants to analyse if barcodes are present${c_reset}
                                     | ${c_yellow}All barcodes are automatically analysed if barcodes are present and the --barcodes parameter is not provided${c_reset}
                                     | ${c_yellow}Numbers should include the leading 0s. E.g. 03,08,11${c_reset}
@@ -512,19 +597,31 @@ def helpMessage() {
 	    
 
     ${c_cyan}annotation:${c_reset}                     | ${c_blue}Annotation options${c_reset}
-    • fast_annotation               | ${c_yellow} If true, Prokka will be executed ${c_reset}
-    • t_fast_annotation             | ${c_yellow}Number of threads used for annotation ${c_reset} 
-        default: 4 
+    • fast_annotation               | ${c_yellow}If true, Prokka will be executed ${c_reset}
+    default: true
+    • t_fast_annotation             | ${c_yellow}Number of threads used for Prokka annotation ${c_reset} 
+    default: 4 
+    • accurate_annotation           | ${c_yellow}If true, PGAP will be executed ${c_reset}
+    default: false
+    • t_accurate_annotation         | ${c_yellow}Number of threads used for PGAP annotation ${c_reset} 
+    default: 4 
+    • pgap_path                     | ${c_yellow}Path to PGAP installation files ${c_reset} 
+    default: /mnt/drive3/tools/pgap/2024-07-18
+    • pgap_version                  | ${c_yellow}Version of PGAP to use ${c_reset} 
+    default: 2024-07-18.build7555
+    • organism                      | ${c_yellow}Scientific name of the organism (necesarry for PGAP annotation) ${c_reset} 
+    f.ex: organism = "escherichia_coli"
+    • ignore_errors                 | ${c_yellow}Option to continue running the pipeline even if errors occur ${c_reset} 
+    default: false
 
     ${c_cyan}assembly_qc:${c_reset}                    | ${c_blue}If provided, will calculate BUSCO scores for the assembly ${c_reset}
-   	default: true
-	• lineage               		| ${c_yellow}Select taxonomic group to use  ${c_reset} 
-        default: fungi_odb10
-	• busco_path             		| ${c_yellow}Path to BUSCO db ${c_reset} 
-        default: /data/databases/busco
+    default: true
     • t_assembly_qc                 | ${c_yellow}Number of threads used for BUSCO ${c_reset} 
-        default: 4 
-
+    default: 4
+    • lineage                       | ${c_yellow}Lineage to use to run BUSCO ${c_reset} 
+    default: bacteria_odb10"
+    • busco_path                    | ${c_yellow}Path to BUSCO installation files ${c_reset} 
+    default: /data/databases/busco
  
     • help                          | ${c_yellow}Show this${c_reset}
                         
@@ -534,3 +631,4 @@ def helpMessage() {
     """
 
 }
+
