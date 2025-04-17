@@ -13,28 +13,36 @@ Scripts are numbered in the order of execution:
 Run the setup script to install Miniconda and initialize the environment:
 
 ```bash
-./linux_setup.sh -h   # View help message first
-./linux_setup.sh      # Run setup
+./1_linuxsetup.sh -h   # View help message first
+./1_linuxsetup.sh      # Run setup
 ```
 
 ### 📋 Download samples from SRA (optional)  
-The script allows the user to automatically download all samples in fastq.gz format with the fastq-dump tool from the sra-toolkit package.  
+The script allows the user to automatically download all samples in `fastq.gz` format using the `fastq-dump` tool from the `sra-toolkit` package.  
 The script uses 3 command line arguments:  
 1. Path to the file containing SRR accession numbers (one per line).
 2. Specify 'SE' for single-end reads or 'PE' for paired-end reads.
-3. . Path to the output directory
+3. Path to the output directory  
 
 ```bash
 python3 2.1_SRR_download.py <accession_file> <SE|PE> [work_dir]
 ```
 
 ## 🧪 FastQC  
-Run the `2_fastqc.py` script to perform quality control on all sequences  
+Run the `2_fastqc.py` script to perform quality control on all sequences. The MultiQC will generate an overview QC report of all samples inside the output folder. Afterward, the .zip files will be deleted to save space.
 
 ```bash
 python 2_fastqc.py
 ```
 
 Notes:
-- Place your `.fastq.gz` files (aka sequences) in a folder named `sequences` (or update the folder name in the script).
-- The output will be saved in a folder named `QualityControl`.
+- Input Files: Place your .fastq.gz files (aka sequences) in a folder named sequences. This folder must be created manually unless the script is updated to handle folder creation.
+- Output Folder: The results will be saved in a folder named QualityControl. This folder will contain:
+    - Individual FastQC reports for each sequence file.
+    - A consolidated MultiQC report summarizing the quality metrics for all samples.
+Expected Output Structure:
+QualityControl/
+├── sample1_fastqc.html
+├── sample2_fastqc.html
+├── ...
+├── multiqc_report.html
