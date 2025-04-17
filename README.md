@@ -39,7 +39,7 @@ Notes:
 - Input Files: Place your .fastq.gz files (aka sequences) in a folder named sequences. This folder must be created manually unless the script is updated to handle folder creation.
 - Output Folder: The results will be saved in a folder named QualityControl. This folder will contain:
     - Individual FastQC reports for each sequence file.
-    - A consolidated MultiQC report summarizing the quality metrics for all samples.
+    - A consolidated MultiQC report summarizing the quality metrics for all samples.  
 Expected Output Structure:
 ```bash
 QualityControl/
