@@ -41,8 +41,10 @@ Notes:
     - Individual FastQC reports for each sequence file.
     - A consolidated MultiQC report summarizing the quality metrics for all samples.
 Expected Output Structure:
+```bash
 QualityControl/
 ├── sample1_fastqc.html
 ├── sample2_fastqc.html
 ├── ...
 ├── multiqc_report.html
+```
