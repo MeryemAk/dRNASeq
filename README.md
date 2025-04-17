@@ -40,6 +40,7 @@ Notes:
 - Output Folder: The results will be saved in a folder named QualityControl. This folder will contain:
     - Individual FastQC reports for each sequence file.
     - A consolidated MultiQC report summarizing the quality metrics for all samples.  
+
 Expected Output Structure:
 ```bash
 QualityControl/
