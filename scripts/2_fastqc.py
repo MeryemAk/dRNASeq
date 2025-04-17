@@ -25,6 +25,7 @@ fileNames = []
 for file in os.listdir(inFolder): # get files with fastq.gz extension
     if file.endswith(".fastq.gz"):
         fileNames.append(os.path.join(inFolder, file)) # Append the file name to the list
+        print("Found files:")
         print("--- {} ---".format(file))
     else:
         print(f"Error: No .fastq.gz files found in '{inFolder}'.")
@@ -42,4 +43,25 @@ for file in fileNames:
     if exit_code != 0:
         print(f"Error: FastQC failed with exit code {exit_code}.")
 
-print("FastQC analysis completed.")
+print("FastQC analysis completed.\n")
+
+#########################################################################################
+# RUN MULTIQC
+#########################################################################################
+print("Creating MultiQC report...\n")
+
+os.chdir(outFolder)  # Change to the output folder for MultiQC
+print("Moving into: {}".format(outFolder))
+
+multiqc_cmd = "multiqc ."
+os.system(multiqc_cmd)  # Run MultiQC in the output folder
+
+print("MultiQC report created.")
+
+print("Deleting unnecessary files...")
+sleep 2s
+delete_cmd="rm *.zip"
+os.system(delete_cmd)
+
+print("The script is done!")
+
