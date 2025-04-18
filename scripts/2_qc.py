@@ -32,33 +32,35 @@ for file in os.listdir(inFolder): # get files with fastq.gz extension
         print(f"Error: No .fastq.gz files found in '{inFolder}'.")
         exit(1)
 #########################################################################################
-# RUN FASTQC
+# RUN FASTQC --> SHORT READS
 #########################################################################################
 # Compose command
-for file in fileNames:
-    fastqc_cmd = "fastqc --extract -t {} -o {} {}".format(threads, outFolder, file)
-    print("\nexectuing: {}".format(fastqc_cmd))
-    exit_code = os.system(fastqc_cmd)
+#for file in fileNames:
+#    fastqc_cmd = "fastqc --extract -t {} -o {} {}".format(threads, outFolder, file)
+#    print("\nexectuing: {}".format(fastqc_cmd))
+#    exit_code = os.system(fastqc_cmd) # Execute
 
     # Check if the command was successful
-    if exit_code != 0:
-        print(f"Error: FastQC failed with exit code {exit_code}.")
+#    if exit_code != 0:
+#        print(f"Error: FastQC failed with exit code {exit_code}.")
 
-print("FastQC analysis completed.\n")
+#print("FastQC analysis completed.\n")
 
 #########################################################################################
-# RUN FILTLONG
+# RUN FILTLONG --> LONG READS
 #########################################################################################
 # Compose command
 for file in fileNames:
-    filt_cmd = "filtlong --min_length 1000 --keep_percent 90 --target_bases 500000000 {} | gzip > {}".format(file, outFolder)
+    # Generate output filepath inside outFolder
+    output_file = os.path.join(outFolder, os.path.basename(file))
+    filt_cmd = "filtlong --min_length 1000 --keep_percent 90 --target_bases 500000000 {} | gzip > {}".format(file, output_file)
         # --min_length 1000 ← Discard any read shorter than 1 kbp.
         #--keep_percent 90 ← Throw out the worst 10% of reads. (measured by bp not read count)
         # --target_bases 500000000 ← Remove the worst reads until only 500 Mbp remain, useful for very large read sets.
         # input.fastq.gz ← The input (must be FASTQ format)
         # | gzip > output.fastq.gz ← Filtlong outputs the filtered reads to stdout. Pipe to gzip to keep the file size down.
     print("\nexectuing: {}".format(filt_cmd))
-    exit_code = os.system(filt_cmd)
+    exit_code = os.system(filt_cmd) # Execute
 
     # Check if the command was successful
     if exit_code != 0:
