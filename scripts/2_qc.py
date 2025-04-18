@@ -43,28 +43,27 @@ for file in fileNames:
     # Check if the command was successful
     if exit_code != 0:
         print(f"Error: FastQC failed with exit code {exit_code}.")
+    else:
+        print(f"FastQC analysis completed successfully for {file}.\n")
 
 print("FastQC analysis completed.\n")
 
 #########################################################################################
-# RUN FILTLONG --> LONG READS
+# RUN LONGQC --> LONG READS
 #########################################################################################
-# Compose command
-## for file in fileNames:
-#    # Generate output filepath inside outFolder
-#    output_file = os.path.join(outFolder, os.path.basename(file))
-#    filt_cmd = "filtlong --min_length 1000 --keep_percent 90 --target_bases 500000000 {} | gzip > {}".format(file, output_file)
-#        # --min_length 1000 ← Discard any read shorter than 1 kbp.
-#        #--keep_percent 90 ← Throw out the worst 10% of reads. (measured by bp not read count)
-#        # --target_bases 500000000 ← Remove the worst reads until only 500 Mbp remain, useful for very large read sets.
-#        # input.fastq.gz ← The input (must be FASTQ format)
-#        # | gzip > output.fastq.gz ← Filtlong outputs the filtered reads to stdout. Pipe to gzip to keep the file size down.
-#    print("\nexectuing: {}".format(filt_cmd))
-#    exit_code = os.system(filt_cmd) # Execute
+# Construct LongQC command
+#for file in fileNames:
+#    longqc_cmd = f"longQC analysis standard --out_dir {outFolder} --threads {threads} {file}"
+#    print(f"\nExecuting: {longqc_cmd}")
+#    exit_code = os.system(longqc_cmd)  # Execute LongQC
+#
 #    # Check if the command was successful
 #    if exit_code != 0:
-#        print(f"Error: Filtlong failed with exit code {exit_code}.")
-#print("Filtlong analysis completed.\n")
+#        print(f"Error: LongQC failed for {file} with exit code {exit_code}.")
+#    else:
+#        print(f"LongQC analysis completed successfully for {file}.\n")
+
+#print("LongQC analysis for all files completed.")
 
 #########################################################################################
 # RUN MULTIQC
