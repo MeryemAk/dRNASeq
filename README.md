@@ -34,8 +34,6 @@ Run the `2_qc.py` script to perform quality control on all sequences. The script
 2. Generate a MultiQC report summarizing the quality metrics for all samples.
 3. Clean up unnecessary `.zip` files to save disk space.
 
-```bash
-python3 2_qc.py
 
 ```bash
 python 2_qc.py
