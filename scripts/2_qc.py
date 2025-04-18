@@ -46,6 +46,26 @@ for file in fileNames:
 print("FastQC analysis completed.\n")
 
 #########################################################################################
+# RUN FILTLONG
+#########################################################################################
+# Compose command
+for file in fileNames:
+    filt_cmd = "filtlong --min_length 1000 --keep_percent 90 --target_bases 500000000 {} | gzip > {}".format(file, outFolder)
+        # --min_length 1000 ← Discard any read shorter than 1 kbp.
+        #--keep_percent 90 ← Throw out the worst 10% of reads. (measured by bp not read count)
+        # --target_bases 500000000 ← Remove the worst reads until only 500 Mbp remain, useful for very large read sets.
+        # input.fastq.gz ← The input (must be FASTQ format)
+        # | gzip > output.fastq.gz ← Filtlong outputs the filtered reads to stdout. Pipe to gzip to keep the file size down.
+    print("\nexectuing: {}".format(filt_cmd))
+    exit_code = os.system(filt_cmd)
+
+    # Check if the command was successful
+    if exit_code != 0:
+        print(f"Error: Filtlong failed with exit code {exit_code}.")
+
+print("Filtlong analysis completed.\n")
+
+#########################################################################################
 # RUN MULTIQC
 #########################################################################################
 print("Creating MultiQC report...\n")
