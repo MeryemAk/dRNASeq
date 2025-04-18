@@ -2,6 +2,7 @@
 #########################################################################################
 # Import libraries
 import os      # file and directory manipulation
+import time    # time manipulation
 #########################################################################################
 baseDir = os.getcwd()                          # Get the current directory
 inFolder = os.path.join(baseDir, "sequences")  # Define the sequences folder path
@@ -79,7 +80,7 @@ os.system(multiqc_cmd)  # Run MultiQC in the output folder
 print("MultiQC report created.")
 
 print("Deleting unnecessary files...")
-sleep 2s
+time.sleep(2)
 delete_cmd="rm *.zip"
 os.system(delete_cmd)
 
