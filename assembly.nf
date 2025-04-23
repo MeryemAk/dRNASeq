@@ -216,40 +216,40 @@ process nanocomp_QC {
     """
 }
 
-process flye_assembly {
+//process flye_assembly {
         
-    label "flye"
+//    label "flye"
         
-    publishDir "${params.out_dir}/03.flye_assembly/", mode: "copy", pattern: "**.{fasta,gfa,gv,txt,log}"
+//    publishDir "${params.out_dir}/03.flye_assembly/", mode: "copy", pattern: "**.{fasta,gfa,gv,txt,log}"
 
-    input: 
-    path fq
+//    input: 
+//    path fq
 
-    output:
-    path "**.log" 
-    path "*/*assembly*" 
-    tuple file(fq), file("*/*assembly.fasta"), emit: fasta_flye
-    path("*/*assembly.fasta"), emit: fasta_flye_annot
+//    output:
+//    path "**.log" 
+//    path "*/*assembly*" 
+//    tuple file(fq), file("*/*assembly.fasta"), emit: fasta_flye
+//    path("*/*assembly.fasta"), emit: fasta_flye_annot
 
-    script:
+//    script:
 
-    gsize = params.gsize ? "--genome-size $params.gsize" : ""
-    coverage = params.asm_coverage ? "--asm-coverage $params.asm_coverage" : ""
-    meta = params.meta ? "--meta" : ""
-    read_quality = params.nano_hq ? "--nano-hq" : "--nano-raw"
+//    gsize = params.gsize ? "--genome-size $params.gsize" : ""
+//    coverage = params.asm_coverage ? "--asm-coverage $params.asm_coverage" : ""
+//    meta = params.meta ? "--meta" : ""
+//    read_quality = params.nano_hq ? "--nano-hq" : "--nano-raw"
 
-    """
-    flye $read_quality $fq $gsize $coverage $meta --out-dir ./${fq.simpleName} -t ${params.t_assembly} -i 5
+//    """
+//    flye $read_quality $fq $gsize $coverage $meta --out-dir ./${fq.simpleName} -t ${params.t_assembly} -i 5
 
-    # add bc on assembly.fasta
-	for file in ./${fq.simpleName}/assembly*; do
-		basename=\${file##*/}
-		basename_no_ext=\${basename%.*}
-		extension=\${file##*.}
-		mv "\$file" "./${fq.simpleName}/${fq.simpleName}_\$basename_no_ext.\$extension"
-	done
-    """
-}
+//    # add bc on assembly.fasta
+//	for file in ./${fq.simpleName}/assembly*; do
+//		basename=\${file##*/}
+//		basename_no_ext=\${basename%.*}
+//		extension=\${file##*.}
+//		mv "\$file" "./${fq.simpleName}/${fq.simpleName}_\$basename_no_ext.\$extension"
+//	done
+//    """
+//}
 
 process initial_alignment {
 
@@ -288,29 +288,29 @@ process initial_bam_processing {
 }
 
 
-process medaka_polishing {
+//process medaka_polishing {
 
-    label "medaka"
+//    label "medaka"
 
-    publishDir "${params.out_dir}/05.polishing/medaka", mode: "copy", pattern: "**.fasta"
+//    publishDir "${params.out_dir}/05.polishing/medaka", mode: "copy", pattern: "**.fasta"
 
-    input:
-    tuple file(fq), file(assembly) 
+//    input:
+//    tuple file(fq), file(assembly) 
 
-    output:
-    tuple file(fq), file ("**consensus.fasta"), emit: fasta_medaka
-    path ("**consensus.fasta"), emit: fasta_medaka_annot
+//    output:
+//    tuple file(fq), file ("**consensus.fasta"), emit: fasta_medaka
+//    path ("**consensus.fasta"), emit: fasta_medaka_annot
 
-    script:
+//    script:
 
-    model = params.model ? "-m $params.model" : ""
+//    model = params.model ? "-m $params.model" : ""
 
-    """
-    medaka_consensus -i $fq -d $assembly -o ./${fq.simpleName} -t ${params.t_polishing} $model 
-    mv ./${fq.simpleName}/consensus.fasta ${fq.simpleName}_consensus.fasta
-    """
+//    """
+//    medaka_consensus -i $fq -d $assembly -o ./${fq.simpleName} -t ${params.t_polishing} $model 
+//    mv ./${fq.simpleName}/consensus.fasta ${fq.simpleName}_consensus.fasta
+//    """
 
-}
+//}
 
 process remapped_alignment {
 
@@ -349,68 +349,68 @@ process remapped_bam_processing {
 }
 
 
-process prokka_annotation {
+//process prokka_annotation {
   
-    label "prokka"
+//    label "prokka"
     
-    publishDir "${params.out_dir}/06.annotation/prokka", mode: "copy"
+//    publishDir "${params.out_dir}/06.annotation/prokka", mode: "copy"
 
-    input:
-    path(assembly) 
+//   input:
+//    path(assembly) 
 
-    output:
-    path "*"
+//   output:
+//    path "*"
 
-    """
-    prokka --outdir ./${assembly.simpleName} --prefix ${assembly.simpleName} $assembly --cpus ${params.t_fast_annotation}
-    """
-}
+//    """
+//    prokka --outdir ./${assembly.simpleName} --prefix ${assembly.simpleName} $assembly --cpus ${params.t_fast_annotation}
+//    """
+//}
 
-process pgap_annotation {
+//process pgap_annotation {
 
-    label "pgap"
+//    label "pgap"
 
-    publishDir "${params.out_dir}/06.annotation/pgap", mode: "copy"
+//    publishDir "${params.out_dir}/06.annotation/pgap", mode: "copy"
 
-    input:
-    path(assembly)
+//    input:
+//    path(assembly)
 
-    output:
-    path "*"
+//    output:
+//    path "*"
 
-    script:
-    errors = params.ignore_errors ? "--ignore-all-errors" : ""
+//    script:
+//    errors = params.ignore_errors ? "--ignore-all-errors" : ""
 
-    """
-    cp ${assembly} ${params.organism}.fasta
+//    """
+//    cp ${assembly} ${params.organism}.fasta
 
-    create_yaml.py ${params.organism}
+//    create_yaml.py ${params.organism}
 
-    python ${params.pgap_path}/pgap.py -n $errors --no-self-update -o ./PGAP --use-version ${params.pgap_version} ./${params.organism}.yaml --cpus ${params.t_accurate_annotation}
+//    python ${params.pgap_path}/pgap.py -n $errors --no-self-update -o ./PGAP --use-version ${params.pgap_version} ./${params.organism}.yaml --cpus ${params.t_accurate_annotation}
 
-    """
+//    """
 
-}
+//}
 
 
-process busco_qc{
+//process busco_qc{
 
-    label "busco"
-    containerOptions '-u $(id -u):$(id -g)'
+//    label "busco"
+//    containerOptions '-u $(id -u):$(id -g)'
         
-    publishDir "${params.out_dir}/07.genome_qc/", mode: "copy"
+//    publishDir "${params.out_dir}/07.genome_qc/", mode: "copy"
 
-    input:
-    tuple file(fq), file(assembly), path(data) 
+//    input:
+//    tuple file(fq), file(assembly), path(data) 
 
-    output:
-    path "*"
+//    output:
+//    path "*"
 
-    """
-    busco -m genome -i $assembly -o ./${fq.simpleName} -l ${params.lineage} --offline --download_path ${data} --cpu ${params.t_assembly_qc}
-    """
+//    """
+//    busco -m genome -i $assembly -o ./${fq.simpleName} -l ${params.lineage} --offline --download_path ${data} --cpu ${params.t_assembly_qc}
+//    """
 
-}
+//}
 
 
 
@@ -429,7 +429,7 @@ workflow {
         nanocomp_QC(preprocessed_fastq.collect())
     }
 
-    draft_assembly=flye_assembly(preprocessed_fastq.flatten())
+    /*draft_assembly=flye_assembly(preprocessed_fastq.flatten())
 
     if (params.polishing) {
         polished_assembly = medaka_polishing(draft_assembly.fasta_flye)
@@ -469,7 +469,7 @@ workflow {
             busco_tuple = draft_assembly.fasta_flye.combine(Channel.fromPath(params.busco_path))
             busco = busco_qc(busco_tuple)
         } 
-    } 
+    } */
 }
 
 
