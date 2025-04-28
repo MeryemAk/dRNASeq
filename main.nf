@@ -195,6 +195,7 @@ process nanoplot_QC {
 
     script:
     """
+    echo "Running QC with NanoPlot..."
     NanoPlot -t ${params.t_qc} -o . --N50 --fastq_rich ${fq}
     """
 }
@@ -213,6 +214,7 @@ process nanocomp_QC {
 
     script:
     """
+    echo "Running QC with NanoComp..."
     NanoComp -t ${params.t_qc} -o . -f png --plot violin --fastq ${fq}
     """
 }
@@ -231,7 +233,7 @@ process trimming{
 
     script:
     """
-    # Trimming with Porechop
+    echo "Trimming with Porechop..."
     porechop -t ${params.t_qc} -i ${fq} -o ${fq.simpleName}_trimmed.fastq
     """
 }
@@ -253,10 +255,10 @@ process human_mapping {
 
     script:
     """
-    echo "Start mapping to human reference genome..."
+    echo "Mapping to human reference genome..."
     minimap2 -ax splice --secondary=no ${params.human_ref} $fq -t ${params.t_mapping} > ${fq.simpleName}_human.sam
     
-    echo "Extracting unmapped reads..."
+    echo "Extracting unmapped and mapped reads..."
     # Extract unmapped reads
     samtools view -f 4 ${fq.simpleName}_human.sam > ${fq.simpleName}_unmapped_human.sam
     
@@ -287,7 +289,7 @@ process candida_mapping {
     minimap2 -ax splice --secondary=no ${params.candida_index} $unmapped_human -t ${params.t_mapping} > ${unmapped_human.simpleName}_candida.sam
     
     # Extract unmapped reads
-    echo "Extracting unmapped reads..."
+    echo "Extracting unmapped and mapped reads..."
     samtools view -f 4 ${fq.simpleName}_candida.sam > ${fq.simpleName}_unmapped_candida.sam
     
     # Extract mapped reads
@@ -316,7 +318,7 @@ process bacterial_mapping {
     minimap2 -ax map-ont --secondary=no ${params.bacterial_index} $unmapped_candida -t ${params.t_mapping} > ${unmapped_bacteria.simpleName}_bacterial.sam
 
     # Extract unmapped reads
-    echo "Extracting unmapped reads..."
+    echo "Extracting unmapped and mapped reads..."
     samtools view -f 4 ${fq.simpleName}_bacterial.sam > ${fq.simpleName}_unmapped_bacteria.sam
 
     # Extract mapped reads
