@@ -12,7 +12,7 @@ This Nextflow pipeline is designed for the analysis of dual RNA-seq data from va
 * [Porechop](https://github.com/rrwick/Porechop)
 * [Minimap2](https://github.com/lh3/minimap2)
 * [Samtools](http://www.htslib.org/)
-* [NanoCount](https://github.com/a-slide/NanoCount)
+* [featureCounts](https://subread.sourceforge.net/featureCounts.html)
 
 ## Possibilities
 - QC control of the reads
