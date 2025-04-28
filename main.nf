@@ -197,6 +197,8 @@ process nanoplot_QC {
     """
     echo "Running QC with NanoPlot..."
     NanoPlot -t ${params.t_qc} -o . --N50 --fastq_rich ${fq}
+
+    echo "Done running QC with NanoPlot"
     """
 }
 
@@ -216,6 +218,8 @@ process nanocomp_QC {
     """
     echo "Running QC with NanoComp..."
     NanoComp -t ${params.t_qc} -o . -f png --plot violin --fastq ${fq}
+
+    echo "Done running QC with NanoComp"
     """
 }
 
@@ -235,6 +239,8 @@ process trimming{
     """
     echo "Trimming with Porechop..."
     porechop -t ${params.t_qc} -i ${fq} -o ${fq.simpleName}_trimmed.fastq
+
+    echo "Done trimming with Porechop"
     """
 }
 
@@ -294,6 +300,8 @@ process candida_mapping {
     
     # Extract mapped reads
     samtools view -F 4 ${fq.simpleName}_candida.sam > ${fq.simpleName}_mapped_candida.sam
+
+    echo "Done mapping to candida reference genome"
     """
 }
 
@@ -323,6 +331,8 @@ process bacterial_mapping {
 
     # Extract mapped reads
     samtools view -F 4 ${fq.simpleName}_bacterial.sam > ${fq.simpleName}_mapped_bacteria.sam
+
+    echo "Done mapping to bacteria index"
     """
 }
 
@@ -337,20 +347,32 @@ process quantification {
     path mapped_human       // Mapped sequences from human genome
     path mapped_candida     // Mapped sequences from candida genome
     path mapped_bacteria    // Mapped sequences from bacteria index
+    // annotation files (.GTF)
 
     output:
     path "*.counts"
 
     script:
     """
-    echo "Counting human genes using NanoCount..."
-    NanoCount -i $mapped_human -o ${fq.simpleName}_human_counts
-    
-    echo "Counting candida genes using NanoCount..."
-    NanoCount -i $mapped_candida -o ${fq.simpleName}_candida_counts
+    echo "Counting human genes..."
+    featureCounts -T ${params.t_counting} -a ${annotation_human} -o human_gene_counts.txt --primary ${mapped_human}
 
-    echo "Counting bacterial genes using NanoCount..."
-    NanoCount -i $mapped_bacteria -o ${fq.simpleName}_bacteria_counts    
+    echo "Counting Candida genes..."
+    featureCounts -T ${params.t_counting} -a ${annotation_candida} -o candida_gene_counts.txt --primary ${mapped_candida}
+
+    echo "Counting bacterial genes..."
+    featureCounts -T ${params.t_counting} -a ${annotation_bacteria} -o bacterial_gene_counts.txt --primary ${mapped_bacteria}
+
+    echo "Counting done"
+
+    # flags
+    # -T: number of threads
+    # -a: annotation file
+    # -o: output file
+    # -t: feature type in GTF file (default: exon, gene, CDS, UTR or Transcripts)
+    # -g: attribute type (default: gene_id, transcript_id, exon_id, gene_name, biotype)
+    # --primary: only primary alignments
+
     """
 }
 
@@ -392,6 +414,10 @@ workflow {
         human_sam_files.sam_output,
         candida_sam_files.sam_output,
         bacterial_sam_files.sam_output
+        
+        file("${params.human_annotation}"),
+        file("${params.candida_annotation}"),
+        file("${params.bacteria_annotation}")
     )
 }
 
