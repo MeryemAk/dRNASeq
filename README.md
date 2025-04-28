@@ -6,14 +6,13 @@ This Nextflow pipeline is designed for the analysis of dual RNA-seq data from va
 
 <img src="images/Pipeline.png" alt="Pipeline" width="800" style="display:block; margin-left:auto; margin-right:auto;"/>
 
-* Nextflow https://www.nextflow.io/
-* Nanocomp https://github.com/wdecoster/nanocomp
-* Nanoplot https://github.com/wdecoster/NanoPlot
-* Porechop https://github.com/rrwick/Porechop
-* Minimap2 https://github.com/lh3/minimap2
-* Samtools http://www.htslib.org/
-* NanoCount https://github.com/a-slide/NanoCount
-
+* [Nextflow](https://www.nextflow.io/)
+* [Nanocomp](https://github.com/wdecoster/nanocomp)
+* [Nanoplot](https://github.com/wdecoster/NanoPlot)
+* [Porechop](https://github.com/rrwick/Porechop)
+* [Minimap2](https://github.com/lh3/minimap2)
+* [Samtools](http://www.htslib.org/)
+* [NanoCount](https://github.com/a-slide/NanoCount)
 
 ## Possibilities
 - QC control of the reads
@@ -23,10 +22,10 @@ This Nextflow pipeline is designed for the analysis of dual RNA-seq data from va
 
 ## Installation Linux
 ### Prerequisites
-On Linux, only Docker is needed: the workflow is started from a Nextflow container. Users can also opt to install Nextflow (https://www.nextflow.io/docs/latest/getstarted.html).  
+On Linux, only Docker is needed: the workflow is started from a Nextflow container. Users can also opt to install [Nextflow](https://www.nextflow.io/docs/latest/getstarted.html).  
 
 ## Quick start
-1) Set up Docker on Linux
+1) Set up Docker on Linux:
 ```bash
 # Install Docker
 sudo dnf install docker
@@ -38,10 +37,10 @@ sudo systemctl enable docker
 # Verify if docker is running correctly
 sudo systemctl status docker      # --> active (running)
 ```
-<img src="images/docker_status.png" alt="docker status" width="300" style="display:block; margin-left:auto; margin-right:auto;"/>
+<img src="images/docker_status.png" alt="docker status" width="500" style="display:block; margin-left:auto; margin-right:auto;"/>
 
-2) Ensure that the `main.nf` script and the `nextflow.config` file are stored in a folder within your home directory. The data to be analyzed must also be placed in this folder. For details on the required input folder structure, refer to the mandatory parameters. If you don’t necessarily want to use Docker-in-Docker but still want to run Nextflow outside of a Docker container, you can skip this step and proceed to step 3
-3) Before running the workflow for the first time, pull the Nextflow Docker image from Docker Hub. If you have already downloaded the image, you can skip this step and proceed to step 3.
+2) Ensure that the `main.nf` script and the `nextflow.config` file are stored in a folder within your home directory. The data to be analyzed must also be placed in this folder. For details on the required input folder structure, refer to the mandatory parameters. If you don’t necessarily want to use Docker-in-Docker but still want to run Nextflow outside of a Docker container, you can skip this step and proceed to step 4
+3) Before running the workflow for the first time, pull the Nextflow Docker image from Docker Hub. If you have already downloaded the image, you can skip this step and proceed to step 4.
 ```bash
 docker pull nextflow/nextflow:21.04.3
 ```
@@ -77,7 +76,7 @@ Input should look like one of these examples:
 ## Additional parameters
  * [--barcodes]: (default: none) Comma separated list of barcode numbers that the user wants to analyse if barcodes are present. All barcodes are automatically analysed if barcodes are present but no --barcodes option is provided. Numbers should include the leading 0s. E.g. 03,08,11
  * Parameters related to Quality Control (QC):
-    - [--qc]: (default: true) If provided, will perform QC analysis (NanComp and NanoPlot)
+    - [--qc]: (default: true) If provided, will perform QC analysis (NanoComp and NanoPlot)
     - [--t_qc]: (default: 4) Number of threads used for QC
  * Parameters related to trimming:
     - [--trimming]: (default: false) If provided, will perform trimming (Porechop)
