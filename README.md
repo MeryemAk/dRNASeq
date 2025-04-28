@@ -1,10 +1,10 @@
 
 # Dual RNA-Seq workflow
-This Nextflow pipeline is designed for the analysis of dual RNA-seq data from vaginal swabs. It performs preprocessing, quality control (QC), mapping, and quantification of reads from both host (human) and microbial (Candida and bacterial) genomes. The workflow is compatible with Linux and Windows and uses Docker containers for tool execution, ensuring platform independence. The container images are freely available on the [StaPH-B Docker repository](https://hub.docker.com/
+This Nextflow pipeline is designed for the analysis of dual RNA-seq data from vaginal swabs. It performs preprocessing, quality control (QC), mapping, and quantification of reads from both host (human) and microbial (Candida and bacterial) genomes. The workflow is compatible with Linux and Windows and uses Docker containers for tool execution, ensuring platform independence. The container images are freely available on the [StaPH-B Docker repository](https://hub.docker.com/).
 
 ## Tools used in the workflow
 
-<img src="images/Pipeline.png" alt="Beschrijving" width="800" style="display:block; margin-left:auto; margin-right:auto;"/>
+<img src="images/Pipeline.png" alt="Pipeline" width="800" style="display:block; margin-left:auto; margin-right:auto;"/>
 
 * Nextflow https://www.nextflow.io/
 * Nanocomp https://github.com/wdecoster/nanocomp
@@ -23,22 +23,36 @@ This Nextflow pipeline is designed for the analysis of dual RNA-seq data from va
 
 ## Installation Linux
 ### Prerequisites
-On Linux, only Docker is needed: the workflow is started from a Nextflow container. Users can also opt to install Nextflow (https://www.nextflow.io/docs/latest/getstarted.html).
+On Linux, only Docker is needed: the workflow is started from a Nextflow container. Users can also opt to install Nextflow (https://www.nextflow.io/docs/latest/getstarted.html).  
 
 ## Quick start
-1) Ensure that the `main.nf` script and the `nextflow.config` file are stored in a folder within your home directory. The data to be analyzed must also be placed in this folder. For details on the required input folder structure, refer to the mandatory parameters. If you don’t necessarily want to use Docker-in-Docker but still want to run Nextflow outside of a Docker container, you can skip this step and proceed to step 3
-2) Before running the workflow for the first time, pull the Nextflow Docker image from Docker Hub. If you have already downloaded the image, you can skip this step and proceed to step 3.
+1) Set up Docker on Linux
+```bash
+# Install Docker
+sudo dnf install docker
+
+# Start & enable Docker
+sudo systemctl start docker
+sudo systemctl enable docker
+
+# Verify if docker is running correctly
+sudo systemctl status docker      # --> active (running)
 ```
-$ docker pull nextflow/nextflow:21.04.3
+<img src="images/docker_status.png" alt="docker status" width="300" style="display:block; margin-left:auto; margin-right:auto;"/>
+
+2) Ensure that the `main.nf` script and the `nextflow.config` file are stored in a folder within your home directory. The data to be analyzed must also be placed in this folder. For details on the required input folder structure, refer to the mandatory parameters. If you don’t necessarily want to use Docker-in-Docker but still want to run Nextflow outside of a Docker container, you can skip this step and proceed to step 3
+3) Before running the workflow for the first time, pull the Nextflow Docker image from Docker Hub. If you have already downloaded the image, you can skip this step and proceed to step 3.
+```bash
+docker pull nextflow/nextflow:21.04.3
 ```
-3) Start the nextflow container. Don't forget to replace "nameoffolder" with your own folder name.
+4) Start the nextflow container. Don't forget to replace "nameoffolder" with your own folder name.
+```bash
+docker run -it --workdir $PWD -v /var/run/docker.sock:/var/run/docker.sock -v $HOME/"nameoffolder":$HOME/"nameoffolder" nextflow/nextflow:21.04.3 /bin/bash 
 ```
-$ docker run -it --workdir $PWD -v /var/run/docker.sock:/var/run/docker.sock -v $HOME/"nameoffolder":$HOME/"nameoffolder" nextflow/nextflow:21.04.3 /bin/bash 
-```
-3) You are now inside the Nextflow container, and the workflow is ready to be executed. Each tool runs in its own separate container, which will be automatically pulled if it is not already available locally when the corresponding process in Nextflow starts.
+5) You are now inside the Nextflow container, and the workflow is ready to be executed. Each tool runs in its own separate container, which will be automatically pulled if it is not already available locally when the corresponding process in Nextflow starts.
 
 ## Usage
-```
+```bash
 nextflow run main.nf --in_dir PATH --out_dir PATH
                          [--barcodes]
                          [--qc][--t_qc]
@@ -78,7 +92,7 @@ Input should look like one of these examples:
 ## Config file
 In the config file (nextflow.config), the default parameters can be adjusted, f. ex. the threads used for all the different processes.
 Next tot the parameter settings, computing resources can also be modified:
-```
+```bash
 executor {
     name = 'local'
     queueSize = 5
