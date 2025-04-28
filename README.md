@@ -1,6 +1,6 @@
 
-# Bacterial_assembly
-Nextflow script for assembly, polishing, mapping, QC and annotation of bacterial genomes from Nanopore data. The workflow can be used on Linux or Windows. All the different tools run in different containers inside a Nextflow container (optional), which makes the bacterial assembly workflow independent of the platform used. The container images used in the workflow are freely avalaible on the StaPH-B repository (https://hub.docker.com/u/staphb) or are custom made.
+# Dual RNA-Seq workflow
+This Nextflow pipeline is designed for the analysis of dual RNA-seq data from vaginal swabs. It performs preprocessing, quality control (QC), mapping, and quantification of reads from both host (human) and microbial (Candida and bacterial) genomes. The workflow is compatible with Linux and Windows and uses Docker containers for tool execution, ensuring platform independence. The container images are freely available on the [StaPH-B Docker repository](https://hub.docker.com/
 
 ## Tools used in the workflow
 
@@ -9,28 +9,24 @@ Nextflow script for assembly, polishing, mapping, QC and annotation of bacterial
 * Nextflow https://www.nextflow.io/
 * Nanocomp https://github.com/wdecoster/nanocomp
 * Nanoplot https://github.com/wdecoster/NanoPlot
-* Flye https://github.com/fenderglass/Flye
+* Porechop https://github.com/rrwick/Porechop
 * Minimap2 https://github.com/lh3/minimap2
 * Samtools http://www.htslib.org/
-* Medaka https://github.com/nanoporetech/medaka
-* BUSCO https://busco.ezlab.org/
-* Prokka https://github.com/tseemann/prokka
-* PGAP https://github.com/ncbi/pgap
+* NanoCount https://github.com/a-slide/NanoCount
+
 
 ## Possibilities
 - QC control of the reads
-- Assembly creation
-- Mapping of original reads against the assembly
-- Polishing of assembly
-- Annotation of the assembly
-- QC control of the assembly
+- Trim reads
+- Mapping of reads against human, Candida and bacterial reference genomes
+- Quantification
 
 ## Installation Linux
 ### Prerequisites
 On Linux, only Docker is needed: the workflow is started from a Nextflow container. Users can also opt to install Nextflow (https://www.nextflow.io/docs/latest/getstarted.html).
 
 ## Quick start
-1) Ensure that the assembly.nf script and the nextflow.config file are stored in a folder within your home directory. The data to be analyzed must also be placed in this folder. For details on the required input folder structure, refer to the mandatory parameters. If you don’t necessarily want to use Docker-in-Docker but still want to run Nextflow outside of a Docker container, you can skip this step and proceed to step 3
+1) Ensure that the `main.nf` script and the `nextflow.config` file are stored in a folder within your home directory. The data to be analyzed must also be placed in this folder. For details on the required input folder structure, refer to the mandatory parameters. If you don’t necessarily want to use Docker-in-Docker but still want to run Nextflow outside of a Docker container, you can skip this step and proceed to step 3
 2) Before running the workflow for the first time, pull the Nextflow Docker image from Docker Hub. If you have already downloaded the image, you can skip this step and proceed to step 3.
 ```
 $ docker pull nextflow/nextflow:21.04.3
@@ -43,18 +39,14 @@ $ docker run -it --workdir $PWD -v /var/run/docker.sock:/var/run/docker.sock -v 
 
 ## Usage
 ```
-nextflow run assembly.nf --in_dir PATH --out_dir PATH
+nextflow run main.nf --in_dir PATH --out_dir PATH
                          [--barcodes]
                          [--qc][--t_qc]
-                         [--nano_hq][--gsize][--meta]][--asm_coverage][--t_assembly]
+                         [--trimming] [--t-trimming]
                          [--mapping][--t_mapping]
-                         [--polishing][--model][--t_polishing]
-                         [--fast_annotation][--t_fast_annotation]
-                         [--accurate_annotation][--pgap_path][--pgap_version][--organism][--ignore_errors][--t_accurate_annotation]
-                         [--assembly_qc][--lineage][--busco_path][t_assembly_qc]
                          [--help]
  
-For help: nextflow run assembly.nf --help
+For help: nextflow run main.nf --help
 ```
 
 ## Mandatory parameters
@@ -73,33 +65,15 @@ Input should look like one of these examples:
  * Parameters related to Quality Control (QC):
     - [--qc]: (default: true) If provided, will perform QC analysis (NanComp and NanoPlot)
     - [--t_qc]: (default: 4) Number of threads used for QC
- * Parameters related to assembly:
-   - [--nano_hq]: (default: true) Mode for ONT Guppy5+ (SUP mode) and Q20 reads (3-5% error rate)
-   - [--gsize]: (default: none) Expected genome size
-   - [--meta]: (default: false) Metagenome / Uneven coverage
-   - [--asm_coverage]: (default: false) reduced coverage for initial disjointig assembly
-   - [--t_assembly]: (default: 4) Number of threads per barcode 
-* Parameters related to mapping:
-   - [--mapping]: (default: true) If provided, will map sort and index original reads against the assembly
+ * Parameters related to trimming:
+    - [--trimming]: (default: false) If provided, will perform trimming (Porechop)
+    - [--t_trimming]: (default: 4) Number of threads for trimming.
+ * Parameters related to mapping:
+   - [--mapping]: (default: true) If provided, will map sort and index reads against human, Candida and bacterial reference genomes
    - [--t_mapping]: (default: 4), minimap2 uses t+1 during mapping) Number of threads used for mapping
-* Parameters related to polishing:
-   - [--polishing]: (default: true) If provided will polish sequences (requires mapping)
-   - [--t_polishing]: (default: 4)  Number of threads used for polishing
-   - [--model]: (default: auto selection): Model used for Medaka polishing: {pore}_{device}_{caller variant}_{caller version}, normally automatically selected by Medaka
- * Parameters related to annotation:
-   - [--fast_annotation]: (default:true) If true, Prokka will be executed
-   - [--t_fast_annotation]: (default: 4) Number of threads used for Prokka annotation
-   - [--accurate_annotation]: (default:true) If true, PGAP will be executed
-   - [--pgap_path]: (default:/mnt/drive3/tools/pgap/2024-07-18) Path to PGAP installation files 
-   - [--pgap_version]: (default: 2024-07-18.build7555) Version of PGAP to use 
-   - [--organism]: (f.ex: organism = "escherichia_coli) "Scientific name of the organism (necesarry for PGAP annotation)
+ * Other:
    - [--ignore_errors] (default: false) Option to continue running the pipeline even if errors occur 
-   - [--t_accurate_annotation]: (default: 4) Number of threads used for PGAP annotation
- * Parameters related to assembly qc:
-   - [--assembly_qc]: (default:true) If provided, will calculate BUSCO scores for the assembly
-   - [--lineage]: (default: funi_odb10) Select taxonomic group to use  
-   - [--busco_path]: (default: /data/databases/busco) Path to BUSCO db ${c_reset} 
-   - [--t_assembly_qc]: (default: 4) Number of threads used for BUSCO
+
 
 ## Config file
 In the config file (nextflow.config), the default parameters can be adjusted, f. ex. the threads used for all the different processes.
@@ -124,11 +98,9 @@ The report, trace and timeline section in the config file generates reports add 
 The output is structured in the following way:
 - 01.preprocessed_data (merged and unzipped FASTQ files)
 - 02.qc (NanoPlot and NanoComp output)
-- 03.flye_assembly (Flye  output)
-- 04.mapped_reads (files necessary for visualisation in IGV)
-- 05.polishing (Polished genome)
-- 06.annotation (Output from Prokka and/or PGAP)
-- 07.genome_qc (Output from BUSCO)
+- 03.trimming (Porechop output)
+- 04.mapped_reads (mapped reads for human, Candida, and bacterial genomes)
+- 05.quantification (gene counts for human, Candida and bacterial genomes - necessary for downstream analysis in R)
 
 
 Along with these outputdirectories, 2 Nextflow reports are also generated:
