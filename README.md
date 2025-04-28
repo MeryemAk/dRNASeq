@@ -4,7 +4,7 @@ This Nextflow pipeline is designed for the analysis of dual RNA-seq data from va
 
 ## Tools used in the workflow
 
-<img src="images/Pipeline.JPG" alt="Beschrijving" width="800" style="display:block; margin-left:auto; margin-right:auto;"/>
+<img src="images/Pipeline.png" alt="Beschrijving" width="800" style="display:block; margin-left:auto; margin-right:auto;"/>
 
 * Nextflow https://www.nextflow.io/
 * Nanocomp https://github.com/wdecoster/nanocomp
