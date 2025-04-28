@@ -1,0 +1,70 @@
+Apr-28 11:48:33.058 [main] DEBUG nextflow.cli.Launcher - $> nextflow run main.nf --help
+Apr-28 11:48:33.286 [main] DEBUG nextflow.cli.CmdRun - N E X T F L O W  ~  version 24.10.5
+Apr-28 11:48:33.353 [main] DEBUG nextflow.plugin.PluginsFacade - Setting up plugin manager > mode=prod; embedded=false; plugins-dir=/root/.nextflow/plugins; core-plugins: nf-amazon@2.9.2,nf-azure@1.10.2,nf-cloudcache@0.4.2,nf-codecommit@0.2.2,nf-console@1.1.4,nf-google@1.15.4,nf-tower@1.9.3,nf-wave@1.7.4
+Apr-28 11:48:33.424 [main] INFO  o.pf4j.DefaultPluginStatusProvider - Enabled plugins: []
+Apr-28 11:48:33.430 [main] INFO  o.pf4j.DefaultPluginStatusProvider - Disabled plugins: []
+Apr-28 11:48:33.438 [main] INFO  org.pf4j.DefaultPluginManager - PF4J version 3.12.0 in 'deployment' mode
+Apr-28 11:48:33.484 [main] INFO  org.pf4j.AbstractPluginManager - No plugins
+Apr-28 11:48:33.546 [main] DEBUG nextflow.config.ConfigBuilder - Found config local: /media/sf_SF/00-stage/dRNASeq/nextflow.config
+Apr-28 11:48:33.559 [main] DEBUG nextflow.config.ConfigBuilder - Parsing config file: /media/sf_SF/00-stage/dRNASeq/nextflow.config
+Apr-28 11:48:33.622 [main] DEBUG n.secret.LocalSecretsProvider - Secrets store: /root/.nextflow/secrets/store.json
+Apr-28 11:48:33.630 [main] DEBUG nextflow.secret.SecretsLoader - Discovered secrets providers: [nextflow.secret.LocalSecretsProvider@4303b7f0] - activable => nextflow.secret.LocalSecretsProvider@4303b7f0
+Apr-28 11:48:33.655 [main] DEBUG nextflow.config.ConfigBuilder - Applying config profile: `standard`
+Apr-28 11:48:35.376 [main] ERROR nextflow.cli.Launcher - Unable to parse config file: '/media/sf_SF/00-stage/dRNASeq/nextflow.config'
+
+  Cannot invoke method div() on null object
+
+java.lang.NullPointerException: Cannot invoke method div() on null object
+	at org.codehaus.groovy.runtime.NullObject.invokeMethod(NullObject.java:113)
+	at org.codehaus.groovy.vmplugin.v8.IndyGuardsFiltersAndSignatures.invokeGroovyObjectInvoker(IndyGuardsFiltersAndSignatures.java:151)
+	at org.codehaus.groovy.vmplugin.v8.IndyInterface.fromCache(IndyInterface.java:321)
+	at _nf_config_a017a534$_run_closure1.doCall(_nf_config_a017a534:21)
+	at _nf_config_a017a534$_run_closure1.doCall(_nf_config_a017a534)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.codehaus.groovy.reflection.CachedMethod.invoke(CachedMethod.java:343)
+	at groovy.lang.MetaMethod.doMethodInvoke(MetaMethod.java:328)
+	at org.codehaus.groovy.runtime.metaclass.ClosureMetaClass.invokeMethod(ClosureMetaClass.java:279)
+	at groovy.lang.MetaClassImpl.invokeMethod(MetaClassImpl.java:1007)
+	at org.codehaus.groovy.vmplugin.v8.IndyInterface.fromCache(IndyInterface.java:321)
+	at nextflow.config.ConfigParser$_parse_closure5.doCall(ConfigParser.groovy:436)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.codehaus.groovy.reflection.CachedMethod.invoke(CachedMethod.java:343)
+	at org.codehaus.groovy.runtime.metaclass.ClosureMetaMethod.invoke(ClosureMetaMethod.java:88)
+	at groovy.lang.ExpandoMetaClass.invokeMethod(ExpandoMetaClass.java:1140)
+	at groovy.lang.MetaClassImpl.invokeMethod(MetaClassImpl.java:1007)
+	at groovy.lang.DelegatingMetaClass.invokeMethod(DelegatingMetaClass.java:165)
+	at org.codehaus.groovy.vmplugin.v8.IndyInterface.fromCache(IndyInterface.java:321)
+	at _nf_config_a017a534.run(_nf_config_a017a534:5)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.codehaus.groovy.reflection.CachedMethod.invoke(CachedMethod.java:343)
+	at org.codehaus.groovy.vmplugin.v8.IndyInterface.fromCache(IndyInterface.java:321)
+	at nextflow.config.ConfigParser$_parse_closure5.doCall(ConfigParser.groovy:457)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.codehaus.groovy.reflection.CachedMethod.invoke(CachedMethod.java:343)
+	at org.codehaus.groovy.runtime.metaclass.ClosureMetaMethod.invoke(ClosureMetaMethod.java:88)
+	at groovy.lang.ExpandoMetaClass.invokeMethod(ExpandoMetaClass.java:1140)
+	at groovy.lang.MetaClassImpl.invokeMethod(MetaClassImpl.java:1007)
+	at groovy.lang.DelegatingMetaClass.invokeMethod(DelegatingMetaClass.java:165)
+	at org.codehaus.groovy.vmplugin.v8.IndyInterface.fromCache(IndyInterface.java:321)
+	at nextflow.config.ConfigParser.parse(ConfigParser.groovy:486)
+	at org.codehaus.groovy.vmplugin.v8.IndyInterface.fromCache(IndyInterface.java:321)
+	at nextflow.config.ConfigParser.parse(ConfigParser.groovy:312)
+	at org.codehaus.groovy.vmplugin.v8.IndyInterface.fromCache(IndyInterface.java:321)
+	at nextflow.config.ConfigBuilder.parse0(ConfigBuilder.groovy:439)
+	at org.codehaus.groovy.vmplugin.v8.IndyInterface.fromCache(IndyInterface.java:321)
+	at nextflow.config.ConfigBuilder.merge0(ConfigBuilder.groovy:425)
+	at org.codehaus.groovy.vmplugin.v8.IndyInterface.fromCache(IndyInterface.java:321)
+	at nextflow.config.ConfigBuilder.buildConfig0(ConfigBuilder.groovy:375)
+	at org.codehaus.groovy.vmplugin.v8.IndyInterface.fromCache(IndyInterface.java:321)
+	at nextflow.config.ConfigBuilder.buildGivenFiles(ConfigBuilder.groovy:320)
+	at org.codehaus.groovy.vmplugin.v8.IndyInterface.fromCache(IndyInterface.java:321)
+	at nextflow.config.ConfigBuilder.buildConfigObject(ConfigBuilder.groovy:818)
+	at org.codehaus.groovy.vmplugin.v8.IndyInterface.fromCache(IndyInterface.java:321)
+	at nextflow.config.ConfigBuilder.build(ConfigBuilder.groovy:831)
+	at nextflow.cli.CmdRun.run(CmdRun.groovy:332)
+	at nextflow.cli.Launcher.run(Launcher.groovy:503)
+	at nextflow.cli.Launcher.main(Launcher.groovy:658)
