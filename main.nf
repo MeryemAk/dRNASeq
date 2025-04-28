@@ -504,7 +504,7 @@ def helpMessage() {
     default: true   
 
     ====================================================================================================                    
-    Run using: nextflow run assembly.nf --in_dir {Input directory} --out_dir {Output directory}
+    Run using: nextflow run main.nf --in_dir {Input directory} --out_dir {Output directory}
     ====================================================================================================
     """
 }
