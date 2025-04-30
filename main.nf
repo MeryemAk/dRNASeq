@@ -179,6 +179,7 @@ process preprocess {
     done
     """
 }
+
 /*
 Filter with filtlong 
 */
@@ -226,8 +227,6 @@ process nanocomp_QC {
     """
 }
 
-/* Kraken implementation? */
-
 /* Trimming process */
 process trimming{
     label "trimming"
@@ -273,7 +272,7 @@ process human_mapping {
 }
 
 /* Extract unmapped/mapped reads and sort/index the mapped reads */
-process sort_index {
+process sort_index_human {
 
     label "samtools"
 
@@ -289,14 +288,14 @@ process sort_index {
     script:
     """
     echo "Extracting unmapped and mapped reads..."
-    samtools view -f 4 ${fq.simpleName}_human.sam > ${fq.simpleName}_unmapped_human.sam
+    samtools view -h -f 4 ${fq.simpleName}_human.sam > ${fq.simpleName}_unmapped_human.sam
     
     # Extract mapped reads
-    samtools view -F 4 ${fq.simpleName}_human.sam > ${fq.simpleName}_mapped_human.sam
+    samtools view -h -F 4 ${fq.simpleName}_human.sam > ${fq.simpleName}_mapped_human.sam
 
     echo "Sorting and indexing BAM files..."
-    samtools sort -o ${mapped_human.simpleName}_sorted.bam ${mapped_human}
-    samtools index ${mapped_human.simpleName}_sorted.bam
+    samtools sort -o ${mapped_human.simpleName}_mapped_sorted.bam ${mapped_human}
+    samtools index ${mapped_human.simpleName}_mapped_sorted.bam
 
     echo "Done sorting and indexing BAM files for human"
     """
@@ -326,7 +325,7 @@ process candida_mapping {
 }
 
 /* Extract unmapped/mapped reads and sort/index the mapped reads */
-process sort_index {
+process sort_index_candida {
 
     label "samtools"
 
@@ -342,14 +341,14 @@ process sort_index {
     script:
     """
     echo "Extracting unmapped and mapped reads..."
-    samtools view -f 4 ${fq.simpleName}_candida.sam > ${fq.simpleName}_unmapped_candida.sam
+    samtools view -h -f 4 ${fq.simpleName}_candida.sam > ${fq.simpleName}_unmapped_candida.sam
     
     # Extract mapped reads
-    samtools view -F 4 ${fq.simpleName}_candida.sam > ${fq.simpleName}_mapped_candida.sam
+    samtools view -h -F 4 ${fq.simpleName}_candida.sam > ${fq.simpleName}_mapped_candida.sam
 
     echo "Sorting and indexing BAM files..."
-    samtools sort -o ${mapped_candida.simpleName}.sorted.bam ${mapped_candida}
-    samtools index ${mapped_candida.simpleName}.sorted.bam
+    samtools sort -o ${mapped_candida.simpleName}_mapped_sorted.bam ${mapped_candida}
+    samtools index ${mapped_candida.simpleName}_mapped_sorted.bam
 
     echo "Done sorting and indexing BAM files for candida"
     """
@@ -380,7 +379,7 @@ process bacterial_mapping {
 }
 
 /* Sort and index the mapped reads */
-process sort_index {
+process sort_index_bacteria {
 
     label "samtools"
 
@@ -396,18 +395,20 @@ process sort_index {
     script:
     """
     echo "Extracting unmapped and mapped reads..."
-    samtools view -f 4 ${fq.simpleName}_bacterial.sam > ${fq.simpleName}_unmapped_bacteria.sam
+    samtools view -h -f 4 ${fq.simpleName}_bacterial.sam > ${fq.simpleName}_unmapped_bacteria.sam
 
     # Extract mapped reads
-    samtools view -F 4 ${fq.simpleName}_bacterial.sam > ${fq.simpleName}_mapped_bacteria.sam
+    samtools view -h -F 4 ${fq.simpleName}_bacterial.sam > ${fq.simpleName}_mapped_bacteria.sam
 
     echo "Sorting and indexing BAM files..."
-    samtools sort -o ${mapped_bacteria.simpleName}.sorted.bam ${mapped_bacteria}
-    samtools index ${mapped_bacteria.simpleName}.sorted.bam
+    samtools sort -o ${mapped_bacteria.simpleName}_mapped_sorted.bam ${mapped_bacteria}
+    samtools index ${mapped_bacteria.simpleName}_mapped_sorted.bam
 
     echo "Done sorting and indexing BAM files"
     """
 }
+
+/* Kraken implementation for left over unmapped reads*/
 
 /* Count genes with NanoCount */
 process quantification {
