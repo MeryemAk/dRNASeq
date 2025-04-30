@@ -9,7 +9,7 @@ This Nextflow pipeline is designed for the analysis of dual RNA-seq data from va
 * [Nextflow](https://www.nextflow.io/)
 * [Nanocomp](https://github.com/wdecoster/nanocomp)
 * [Nanoplot](https://github.com/wdecoster/NanoPlot)
-* [Porechop](https://github.com/rrwick/Porechop)
+* [Pychopper](https://github.com/epi2me-labs/pychopper)
 * [Minimap2](https://github.com/lh3/minimap2)
 * [Samtools](http://www.htslib.org/)
 * [featureCounts](https://subread.sourceforge.net/featureCounts.html)
@@ -50,6 +50,11 @@ docker run -it --workdir $PWD -v /var/run/docker.sock:/var/run/docker.sock -v $H
 ```
 5) You are now inside the Nextflow container, and the workflow is ready to be executed. Each tool runs in its own separate container, which will be automatically pulled if it is not already available locally when the corresponding process in Nextflow starts.
 
+6) (Optional) Dry run te nextflow script firs. This ensures that all dependencies, tools, file paths and configurations are correct. Run the following command:
+```bash
+nextflow run main.nf -dry-run
+```
+
 ## Usage
 ```bash
 nextflow run main.nf --in_dir PATH --out_dir PATH
@@ -79,11 +84,11 @@ Input should look like one of these examples:
     - [--qc]: (default: true) If provided, will perform QC analysis (NanoComp and NanoPlot)
     - [--t_qc]: (default: 4) Number of threads used for QC
  * Parameters related to trimming:
-    - [--trimming]: (default: false) If provided, will perform trimming (Porechop)
+    - [--trimming]: (default: false) If provided, will perform trimming (Pychopper)
     - [--t_trimming]: (default: 4) Number of threads for trimming.
  * Parameters related to mapping:
    - [--mapping]: (default: true) If provided, will map sort and index reads against human, Candida and bacterial reference genomes
-   - [--t_mapping]: (default: 4), minimap2 uses t+1 during mapping) Number of threads used for mapping
+   - [--t_mapping]: ((default: 4), minimap2 uses t+1 during mapping) Number of threads used for mapping
  * Other:
    - [--ignore_errors] (default: false) Option to continue running the pipeline even if errors occur 
 
@@ -111,7 +116,7 @@ The report, trace and timeline section in the config file generates reports add 
 The output is structured in the following way:
 - 01.preprocessed_data (merged and unzipped FASTQ files)
 - 02.qc (NanoPlot and NanoComp output)
-- 03.trimming (Porechop output)
+- 03.trimming (Pychopper output)
 - 04.mapped_reads (mapped reads for human, Candida, and bacterial genomes)
 - 05.quantification (gene counts for human, Candida and bacterial genomes - necessary for downstream analysis in R)
 
