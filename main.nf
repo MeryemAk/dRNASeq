@@ -179,6 +179,9 @@ process preprocess {
     done
     """
 }
+/*
+Filter with filtlong 
+*/
 
 /* Quality control processes */
 process nanoplot_QC {
@@ -222,6 +225,8 @@ process nanocomp_QC {
     echo "Done running QC with NanoComp"
     """
 }
+
+/* Kraken implementation? */
 
 /* Trimming process */
 process trimming{
@@ -336,6 +341,38 @@ process bacterial_mapping {
     """
 }
 
+/* Sort and index the mapped reads */
+process sort_index {
+
+    label "mapping"
+
+    publishDir "${params.out_dir}/04.mapped_reads/sorted_indexed", mode: "copy"
+
+    input:
+    path mapped_human       // Mapped sequences from human genome
+    path mapped_candida     // Mapped sequences from candida genome
+    path mapped_bacteria    // Mapped sequences from bacteria index
+
+    output:
+    path "*.sorted.bam"
+    path "*.sorted.bam.bai"
+
+    script:
+    """
+    echo "Sorting and indexing BAM files..."
+    samtools sort -o ${mapped_human.simpleName}.sorted.bam ${mapped_human}
+    samtools index ${mapped_human.simpleName}.sorted.bam
+
+    samtools sort -o ${mapped_candida.simpleName}.sorted.bam ${mapped_candida}
+    samtools index ${mapped_candida.simpleName}.sorted.bam
+
+    samtools sort -o ${mapped_bacteria.simpleName}.sorted.bam ${mapped_bacteria}
+    samtools index ${mapped_bacteria.simpleName}.sorted.bam
+
+    echo "Done sorting and indexing BAM files"
+    """
+}
+
 /* Count genes with NanoCount */
 process quantification {
     
@@ -344,9 +381,9 @@ process quantification {
     publishDir "${params.out_dir}/05.quantification/", mode: "copy"
 
     input:
-    path mapped_human       // Mapped sequences from human genome
-    path mapped_candida     // Mapped sequences from candida genome
-    path mapped_bacteria    // Mapped sequences from bacteria index
+    path // sorted and indexed human alignments
+    path // sorted and indexed candida alignments
+    path // sorted and indexed bacterial alignments
     // annotation files (.GTF)
 
     output:
