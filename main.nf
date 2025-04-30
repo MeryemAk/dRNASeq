@@ -268,14 +268,37 @@ process human_mapping {
     """
     echo "Mapping to human reference genome..."
     minimap2 -ax splice --secondary=no ${params.human_ref} $fq -t ${params.t_mapping} > ${fq.simpleName}_human.sam
-    
+    echo "Done mapping to human reference genome"
+    """
+}
+
+/* Extract unmapped/mapped reads and sort/index the mapped reads */
+process sort_index {
+
+    label "samtools"
+
+    publishDir "${params.out_dir}/04.mapped_reads/sorted_indexed", mode: "copy"
+
+    input:
+    path mapped_human       // Mapped sequences from human genome
+
+    output:
+    path "*.sorted.bam"
+    path "*.sorted.bam.bai"
+
+    script:
+    """
     echo "Extracting unmapped and mapped reads..."
-    # Extract unmapped reads
     samtools view -f 4 ${fq.simpleName}_human.sam > ${fq.simpleName}_unmapped_human.sam
     
     # Extract mapped reads
     samtools view -F 4 ${fq.simpleName}_human.sam > ${fq.simpleName}_mapped_human.sam
-    echo "Done mapping to human reference genome"
+
+    echo "Sorting and indexing BAM files..."
+    samtools sort -o ${mapped_human.simpleName}_sorted.bam ${mapped_human}
+    samtools index ${mapped_human.simpleName}_sorted.bam
+
+    echo "Done sorting and indexing BAM files for human"
     """
 }
 
@@ -298,15 +321,37 @@ process candida_mapping {
     """
     echo "Mapping to candida reference genome..."
     minimap2 -ax splice --secondary=no ${params.candida_index} $unmapped_human -t ${params.t_mapping} > ${unmapped_human.simpleName}_candida.sam
-    
-    # Extract unmapped reads
+    echo "Done mapping to candida reference genome"
+    """
+}
+
+/* Extract unmapped/mapped reads and sort/index the mapped reads */
+process sort_index {
+
+    label "samtools"
+
+    publishDir "${params.out_dir}/04.mapped_reads/sorted_indexed", mode: "copy"
+
+    input:
+    path mapped_candida     // Mapped sequences from candida genome
+
+    output:
+    path "*.sorted.bam"
+    path "*.sorted.bam.bai"
+
+    script:
+    """
     echo "Extracting unmapped and mapped reads..."
     samtools view -f 4 ${fq.simpleName}_candida.sam > ${fq.simpleName}_unmapped_candida.sam
     
     # Extract mapped reads
     samtools view -F 4 ${fq.simpleName}_candida.sam > ${fq.simpleName}_mapped_candida.sam
 
-    echo "Done mapping to candida reference genome"
+    echo "Sorting and indexing BAM files..."
+    samtools sort -o ${mapped_candida.simpleName}.sorted.bam ${mapped_candida}
+    samtools index ${mapped_candida.simpleName}.sorted.bam
+
+    echo "Done sorting and indexing BAM files for candida"
     """
 }
 
@@ -330,13 +375,6 @@ process bacterial_mapping {
     echo "Mapping to bacteria index..."
     minimap2 -ax map-ont --secondary=no ${params.bacterial_index} $unmapped_candida -t ${params.t_mapping} > ${unmapped_bacteria.simpleName}_bacterial.sam
 
-    # Extract unmapped reads
-    echo "Extracting unmapped and mapped reads..."
-    samtools view -f 4 ${fq.simpleName}_bacterial.sam > ${fq.simpleName}_unmapped_bacteria.sam
-
-    # Extract mapped reads
-    samtools view -F 4 ${fq.simpleName}_bacterial.sam > ${fq.simpleName}_mapped_bacteria.sam
-
     echo "Done mapping to bacteria index"
     """
 }
@@ -344,13 +382,11 @@ process bacterial_mapping {
 /* Sort and index the mapped reads */
 process sort_index {
 
-    label "mapping"
+    label "samtools"
 
     publishDir "${params.out_dir}/04.mapped_reads/sorted_indexed", mode: "copy"
 
     input:
-    path mapped_human       // Mapped sequences from human genome
-    path mapped_candida     // Mapped sequences from candida genome
     path mapped_bacteria    // Mapped sequences from bacteria index
 
     output:
@@ -359,13 +395,13 @@ process sort_index {
 
     script:
     """
+    echo "Extracting unmapped and mapped reads..."
+    samtools view -f 4 ${fq.simpleName}_bacterial.sam > ${fq.simpleName}_unmapped_bacteria.sam
+
+    # Extract mapped reads
+    samtools view -F 4 ${fq.simpleName}_bacterial.sam > ${fq.simpleName}_mapped_bacteria.sam
+
     echo "Sorting and indexing BAM files..."
-    samtools sort -o ${mapped_human.simpleName}.sorted.bam ${mapped_human}
-    samtools index ${mapped_human.simpleName}.sorted.bam
-
-    samtools sort -o ${mapped_candida.simpleName}.sorted.bam ${mapped_candida}
-    samtools index ${mapped_candida.simpleName}.sorted.bam
-
     samtools sort -o ${mapped_bacteria.simpleName}.sorted.bam ${mapped_bacteria}
     samtools index ${mapped_bacteria.simpleName}.sorted.bam
 
