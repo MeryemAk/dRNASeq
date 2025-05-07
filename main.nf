@@ -180,10 +180,6 @@ process preprocess {
     """
 }
 
-/*
-Filter with filtlong 
-*/
-
 /* Quality control processes */
 process nanoplot_QC {
 
@@ -199,10 +195,7 @@ process nanoplot_QC {
 
     script:
     """
-    echo "Running QC with NanoPlot..."
     NanoPlot -t ${params.t_qc} -o . --N50 --fastq_rich ${fq}
-
-    echo "Done running QC with NanoPlot"
     """
 }
 
@@ -220,10 +213,7 @@ process nanocomp_QC {
 
     script:
     """
-    echo "Running QC with NanoComp..."
     NanoComp -t ${params.t_qc} -o . -f png --plot violin --fastq ${fq}
-
-    echo "Done running QC with NanoComp"
     """
 }
 
@@ -241,10 +231,8 @@ process trimming{
 
     script:
     """
-    echo "Trimming with Porechop..."
-    porechop -t ${params.t_qc} -i ${fq} -o ${fq.simpleName}_trimmed.fastq
-
-    echo "Done trimming with Porechop"
+    pychopper -t ${params.t_trimming} ${fq} ${fq.simpleName}_trimmed.fastq
+    # -k kit PCS109, PCS110, PCS111, LSK114
     """
 }
 
@@ -257,7 +245,6 @@ process human_mapping {
 
     input:
     path fq             // Input FASTQ files either from trimming or preprocessing
-    path human_ref      // Human reference genome file path (define in config file)
 
     output:
     path "*_human.sam", emit: sam_output
@@ -265,9 +252,7 @@ process human_mapping {
 
     script:
     """
-    echo "Mapping to human reference genome..."
     minimap2 -ax splice --secondary=no ${params.human_ref} $fq -t ${params.t_mapping} > ${fq.simpleName}_human.sam
-    echo "Done mapping to human reference genome"
     """
 }
 
@@ -287,17 +272,15 @@ process sort_index_human {
 
     script:
     """
-    echo "Extracting unmapped and mapped reads..."
+    # Extract unmapped reads
     samtools view -h -f 4 ${fq.simpleName}_human.sam > ${fq.simpleName}_unmapped_human.sam
     
     # Extract mapped reads
     samtools view -h -F 4 ${fq.simpleName}_human.sam > ${fq.simpleName}_mapped_human.sam
 
-    echo "Sorting and indexing BAM files..."
+    # Sort and index BAM files
     samtools sort -o ${mapped_human.simpleName}_mapped_sorted.bam ${mapped_human}
     samtools index ${mapped_human.simpleName}_mapped_sorted.bam
-
-    echo "Done sorting and indexing BAM files for human"
     """
 }
 
@@ -310,7 +293,6 @@ process candida_mapping {
 
     input:
     path unmapped_human     // Input FASTQ file from human_mapping process
-    path candida_ref        // Candida reference genome file path (define in config file)
 
     output:
     path "*_candida.sam", emit: sam_output
@@ -318,9 +300,7 @@ process candida_mapping {
 
     script:
     """
-    echo "Mapping to candida reference genome..."
-    minimap2 -ax splice --secondary=no ${params.candida_index} $unmapped_human -t ${params.t_mapping} > ${unmapped_human.simpleName}_candida.sam
-    echo "Done mapping to candida reference genome"
+    minimap2 -ax splice --secondary=no ${params.candida_ref} $unmapped_human -t ${params.t_mapping} > ${unmapped_human.simpleName}_candida.sam
     """
 }
 
@@ -340,17 +320,15 @@ process sort_index_candida {
 
     script:
     """
-    echo "Extracting unmapped and mapped reads..."
+    # Extract unmapped reads
     samtools view -h -f 4 ${fq.simpleName}_candida.sam > ${fq.simpleName}_unmapped_candida.sam
     
     # Extract mapped reads
     samtools view -h -F 4 ${fq.simpleName}_candida.sam > ${fq.simpleName}_mapped_candida.sam
 
-    echo "Sorting and indexing BAM files..."
+    # Sort and index BAM files
     samtools sort -o ${mapped_candida.simpleName}_mapped_sorted.bam ${mapped_candida}
     samtools index ${mapped_candida.simpleName}_mapped_sorted.bam
-
-    echo "Done sorting and indexing BAM files for candida"
     """
 }
 
@@ -363,7 +341,6 @@ process bacterial_mapping {
 
     input:
     path unmapped_candida       // unmapped candida reads
-    path bacterial_index        // Bacteria index file path (define in config file)
 
     output:
     path "*_bacterial.sam", emit: sam_output
@@ -371,10 +348,7 @@ process bacterial_mapping {
 
     script:
     """
-    echo "Mapping to bacteria index..."
-    minimap2 -ax map-ont --secondary=no ${params.bacterial_index} $unmapped_candida -t ${params.t_mapping} > ${unmapped_bacteria.simpleName}_bacterial.sam
-
-    echo "Done mapping to bacteria index"
+    minimap2 -ax map-ont --secondary=no ${params.bacteria_index} $unmapped_candida -t ${params.t_mapping} > ${unmapped_bacteria.simpleName}_bacteria.sam
     """
 }
 
@@ -394,17 +368,15 @@ process sort_index_bacteria {
 
     script:
     """
-    echo "Extracting unmapped and mapped reads..."
+    #Extracting unmapped reads
     samtools view -h -f 4 ${fq.simpleName}_bacterial.sam > ${fq.simpleName}_unmapped_bacteria.sam
 
     # Extract mapped reads
     samtools view -h -F 4 ${fq.simpleName}_bacterial.sam > ${fq.simpleName}_mapped_bacteria.sam
 
-    echo "Sorting and indexing BAM files..."
+    # Sort and index BAM files
     samtools sort -o ${mapped_bacteria.simpleName}_mapped_sorted.bam ${mapped_bacteria}
     samtools index ${mapped_bacteria.simpleName}_mapped_sorted.bam
-
-    echo "Done sorting and indexing BAM files"
     """
 }
 
@@ -421,23 +393,20 @@ process quantification {
     path // sorted and indexed human alignments
     path // sorted and indexed candida alignments
     path // sorted and indexed bacterial alignments
-    // annotation files (.GTF)
 
     output:
     path "*.counts"
 
     script:
     """
-    echo "Counting human genes..."
+    # Counting human genes
     featureCounts -T ${params.t_counting} -a ${annotation_human} -o human_gene_counts.txt --primary ${mapped_human}
 
-    echo "Counting Candida genes..."
+    # Counting candida genes
     featureCounts -T ${params.t_counting} -a ${annotation_candida} -o candida_gene_counts.txt --primary ${mapped_candida}
 
-    echo "Counting bacterial genes..."
+    # Counting bacterial genes
     featureCounts -T ${params.t_counting} -a ${annotation_bacteria} -o bacterial_gene_counts.txt --primary ${mapped_bacteria}
-
-    echo "Counting done"
 
     # flags
     # -T: number of threads
@@ -446,7 +415,6 @@ process quantification {
     # -t: feature type in GTF file (default: exon, gene, CDS, UTR or Transcripts)
     # -g: attribute type (default: gene_id, transcript_id, exon_id, gene_name, biotype)
     # --primary: only primary alignments
-
     """
 }
 
