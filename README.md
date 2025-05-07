@@ -1,4 +1,3 @@
-
 # Dual RNA-Seq workflow
 This Nextflow pipeline is designed for the analysis of dual RNA-seq data from vaginal swabs. It performs preprocessing, quality control (QC), mapping, and quantification of reads from both host (human) and microbial (Candida and bacterial) genomes. The workflow is compatible with Linux and Windows and uses Docker containers for tool execution, ensuring platform independence. The container images are freely available on the [StaPH-B Docker repository](https://hub.docker.com/).
 
@@ -39,21 +38,34 @@ sudo systemctl status docker      # --> active (running)
 ```
 <img src="images/docker_status.png" alt="docker status" width="500" style="display:block; margin-left:auto; margin-right:auto;"/>
 
-2) Ensure that the `main.nf` script and the `nextflow.config` file are stored in a folder within your home directory. The data to be analyzed must also be placed in this folder. For details on the required input folder structure, refer to the mandatory parameters. If you don’t necessarily want to use Docker-in-Docker but still want to run Nextflow outside of a Docker container, you can skip this step and proceed to step 4
-3) Before running the workflow for the first time, pull the Nextflow Docker image from Docker Hub. If you have already downloaded the image, you can skip this step and proceed to step 4.
+2) Clone the Github repository.
+
+3) Build the Docker images for nanocomp and nanopack.
+```bash
+# Build Docker image for nanocomp
+# Move into the nanocomp folder
+cd dRNASeq/nanocomp
+# Execute the following command to build the Docker image
+docker build -t nanocomp:v1 .       # Takes approximately 30 minutes
+
+# Build Docker image for nanopack
+# Move into the nanopack folder
+cd dRNASeq/nanopack
+# Execute the following command to build the Docker image
+docker build -t nanopack:v1 .       # Takes approximately 45 minutes
+```
+
+4) The data to be analyzed must also be placed in the dRNASeq folder. For details on the required input folder structure, refer to the mandatory parameters.
+
+5) Before running the workflow for the first time, pull the Nextflow Docker image from Docker Hub. If you have already downloaded the image, you can skip this step and proceed to step 4.
 ```bash
 docker pull nextflow/nextflow:21.04.3
 ```
-4) Start the nextflow container. Don't forget to replace "nameoffolder" with your own folder name.
+6) Start the nextflow container. Don't forget to replace "nameoffolder" with your own folder name.
 ```bash
 docker run -it --workdir $PWD -v /var/run/docker.sock:/var/run/docker.sock -v $HOME/"nameoffolder":$HOME/"nameoffolder" nextflow/nextflow:21.04.3 /bin/bash 
 ```
-5) You are now inside the Nextflow container, and the workflow is ready to be executed. Each tool runs in its own separate container, which will be automatically pulled if it is not already available locally when the corresponding process in Nextflow starts.
-
-6) (Optional) Dry run te nextflow script firs. This ensures that all dependencies, tools, file paths and configurations are correct. Run the following command:
-```bash
-nextflow run main.nf -dry-run
-```
+7) You are now inside the Nextflow container, and the workflow is ready to be executed. Each tool runs in its own separate container, which will be automatically pulled if it is not already available locally when the corresponding process in Nextflow starts.
 
 ## Usage
 ```bash
@@ -98,12 +110,13 @@ In the config file (nextflow.config), the default parameters can be adjusted, f.
 Next tot the parameter settings, computing resources can also be modified:
 ```bash
 executor {
-    name = 'local'
-    queueSize = 5
-    memory = '64 GB'
-    cpus = 32
+  name = 'local'
+  queueSize = 5
+  memory = '64 GB'
+  cpus = 32
 }
 ```
+
 The maximum memory is limited by default on 64 GB, but should be adjusted to personal computer characteristics.
 queueSize is limited to 5, which means that only 5 processes can be executed at once. If the default number of threads are used, this means that 20 (5x4) threads at once will be used. 
 The user can also replace queueSize with "cpus" if wanted. 
@@ -124,6 +137,43 @@ The output is structured in the following way:
 Along with these outputdirectories, 2 Nextflow reports are also generated:
 - report: metrics about the workflow execution
 - timeline: timeline for all processes
+
+Output folder structure example:
+```bash
+<out_dir>/
+├── 01.preprocessed_data/         # Merged and unzipped FASTQ files
+│   ├── sample1.fastq
+│   ├── sample2.fastq
+│   └── ...
+├── 02.qc/                        # Output from NanoPlot and NanoComp
+│   ├── nanoplot/
+│   │   ├── NanoPlot-report.html
+│   │   └── ...
+│   └── nanocomp/
+│       ├── NanoComp-report.html
+│       └── ...
+├── 03.trimming/                  # Pychopper output (trimmed reads)
+│   ├── sample1_trimmed.fastq
+│   ├── sample2_trimmed.fastq
+│   └── ...
+├── 04.mapped_reads/             # BAM files: aligned reads
+│   ├── human/
+│   │   ├── sample1.bam
+│   │   └── ...
+│   ├── candida/
+│   │   ├── sample1.bam
+│   │   └── ...
+│   └── bacteria/
+│       ├── sample1.bam
+│       └── ...
+├── 05.quantification/           # featureCounts output
+│   ├── human_counts.txt
+│   ├── candida_counts.txt
+│   └── bacteria_counts.txt
+├── report.html                  # Nextflow execution report
+├── timeline.html                # Timeline of process execution
+└── trace.txt                    # Optional: trace file if enabled in config
+```
 
 ## Other remarks
 Each time Nextflow is executed, directories within the work directory are created where the processes run. Don't forget to empty this work direcotry regulary.
