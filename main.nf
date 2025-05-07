@@ -390,9 +390,9 @@ process quantification {
     publishDir "${params.out_dir}/05.quantification/", mode: "copy"
 
     input:
-    path // sorted and indexed human alignments
-    path // sorted and indexed candida alignments
-    path // sorted and indexed bacterial alignments
+    path mapped_human
+    path mapped_candida
+    path mapped_bacteria
 
     output:
     path "*.counts"
@@ -400,13 +400,13 @@ process quantification {
     script:
     """
     # Counting human genes
-    featureCounts -T ${params.t_counting} -a ${annotation_human} -o human_gene_counts.txt --primary ${mapped_human}
+    featureCounts -T ${params.t_counting} -a ${params.human_annotation} -o human_gene_counts.txt --primary ${mapped_human}
 
     # Counting candida genes
-    featureCounts -T ${params.t_counting} -a ${annotation_candida} -o candida_gene_counts.txt --primary ${mapped_candida}
+    featureCounts -T ${params.t_counting} -a ${params.candida_annotation} -o candida_gene_counts.txt --primary ${mapped_candida}
 
     # Counting bacterial genes
-    featureCounts -T ${params.t_counting} -a ${annotation_bacteria} -o bacterial_gene_counts.txt --primary ${mapped_bacteria}
+    featureCounts -T ${params.t_counting} -a ${params.bacteria_annotation} -o bacterial_gene_counts.txt --primary ${mapped_bacteria}
 
     # flags
     # -T: number of threads
@@ -443,23 +443,22 @@ workflow {
     }
 
     // Mapping to human reference genome
-    human_sam_files = human_mapping(mapping_input, file("${params.human_ref}"))
+    human_sam_files = human_mapping(mapping_input)
 
     // Mapping to Candida reference genome
-    candida_sam_files = candida_mapping(human_sam_files.unmapped_output, file("${params.candida_ref}"))
+    candida_sam_files = candida_mapping(human_sam_files.unmapped_output)
 
     // Mapping to bacterial reference genome
-    bacterial_sam_files = bacterial_mapping(candida_sam_files.unmapped_output, file("${params.bacteria_index}"))
+    bacterial_sam_files = bacterial_mapping(candida_sam_files.unmapped_output)
 
     // Quantification
     quantification(
-        human_sam_files.sam_output,
-        candida_sam_files.sam_output,
-        bacterial_sam_files.sam_output
-        
-        file("${params.human_annotation}"),
-        file("${params.candida_annotation}"),
-        file("${params.bacteria_annotation}")
+        mapped_human.sam_output,
+        mapped_candida.sam_output,
+        mapped_bacteria.sam_output,
+        params.human_annotation,
+        params.candida_annotation,
+        params.bacteria_annotation
     )
 }
 
