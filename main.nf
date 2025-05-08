@@ -348,7 +348,7 @@ process bacterial_mapping {
 
     script:
     """
-    minimap2 -ax map-ont --secondary=no ${params.bacteria_index} $unmapped_candida -t ${params.t_mapping} > ${unmapped_bacteria.simpleName}_bacteria.sam
+    minimap2 -ax map-ont --secondary=no ${params.bacteria_index} $unmapped_candida -t ${params.t_mapping} > ${unmapped_candida.simpleName}_bacteria.sam
     """
 }
 
@@ -368,8 +368,8 @@ process sort_index_bacteria {
 
     script:
     """
-    #Extracting unmapped reads
-    samtools view -h -f 4 ${fq.simpleName}_bacterial.sam > ${fq.simpleName}_unmapped_bacteria.sam
+    # Extracting unmapped reads & transforming it to fastq for Kraken
+    samtools view -b -f 4 ${mapped_bacteria.simpleName}_bacteria.sam | samtools fastq - > ${mapped_bacteria.simpleName}_unmapped_bacteria.fastq
 
     # Extract mapped reads
     samtools view -h -F 4 ${fq.simpleName}_bacterial.sam > ${fq.simpleName}_mapped_bacteria.sam
@@ -381,6 +381,24 @@ process sort_index_bacteria {
 }
 
 /* Kraken implementation for left over unmapped reads*/
+process kraken_classification {
+
+    label "kraken"
+
+    publishDir "${params.out_dir}/06.kraken_results/", mode: "copy"
+
+    input:
+    path unmapped_bacterial_fastq,  // Input: Unmapped bacterial reads
+    path kraken_db                  // Kraken database
+
+    output:
+    path "*.kraken", emit: kraken_output
+
+    script:
+    """
+    kraken2 --db ${kraken_db} --report ${unmapped_bacterial_fastq.simpleName}_kraken_report.txt --output ${unmapped_bacterial_fastq.simpleName}_kraken_output.txt ${unmapped_bacterial_fastq}
+    """
+}
 
 /* Count genes with NanoCount */
 process quantification {
@@ -451,6 +469,12 @@ workflow {
     // Mapping to bacterial reference genome
     bacterial_sam_files = bacterial_mapping(candida_sam_files.unmapped_output)
 
+    // Kraken classification (using unmapped bacterial reads in FASTQ format)
+    kraken_classification(
+        sort_index_bacteria.unmapped_bacteria_fastq,
+        params.kraken_db
+    )
+
     // Quantification
     quantification(
         mapped_human.sam_output,
@@ -507,6 +531,8 @@ def parameterShow() {
      • human_ref                                | ${c_yellow}${params.human_ref}${c_reset}
      • candida_ref                              | ${c_yellow}${params.candida_ref}${c_reset}
      • bacteria_index                           | ${c_yellow}${params.bacteria_index}${c_reset}
+
+    ${c_cyan}Kraken classification:${c_reset}   | ${c_blue}${params.mapping}${c_reset}
 
      ${c_cyan}Quantification:${c_reset}         | ${c_blue}${params.mapping}${c_reset}
      ====================================================================================================
@@ -568,6 +594,9 @@ def helpMessage() {
     • human_ref                                         | ${c_yellow}Path to the human reference genome${c_reset}
     • candida_ref                                       | ${c_yellow}Path to the candida reference genome${c_reset}
     • bacteria_index                                    | ${c_yellow}Path to the bacteria index${c_reset}
+
+    ${c_cyan}Kraken classification:${c_reset}           | ${c_blue}If provided, will perform quantification ${c_reset}
+    default: true 
 
     ${c_cyan}Quantification:${c_reset}                  | ${c_blue}If provided, will perform quantification ${c_reset}
     default: true   
