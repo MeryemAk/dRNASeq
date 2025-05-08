@@ -180,8 +180,7 @@ Output folder structure example:
 │   ├── candida_counts.txt
 │   └── bacteria_counts.txt
 ├── report.html                  # Nextflow execution report
-├── timeline.html                # Timeline of process execution
-└── trace.txt                    # Optional: trace file if enabled in config
+└── timeline.html                # Timeline of process execution
 ```
 
 ## Other remarks
