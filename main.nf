@@ -385,7 +385,7 @@ process kraken_classification {
 
     label "kraken"
 
-    publishDir "${params.out_dir}/06.kraken_results/", mode: "copy"
+    publishDir "${params.out_dir}/05.kraken_results/", mode: "copy"
 
     input:
     path unmapped_bacterial_fastq,  // Input: Unmapped bacterial reads
@@ -405,7 +405,7 @@ process quantification {
     
     label "counting"
 
-    publishDir "${params.out_dir}/05.quantification/", mode: "copy"
+    publishDir "${params.out_dir}/06.quantification/", mode: "copy"
 
     input:
     path mapped_human

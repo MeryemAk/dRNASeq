@@ -11,12 +11,14 @@ This Nextflow pipeline is designed for the analysis of dual RNA-seq data from va
 * [Pychopper](https://github.com/epi2me-labs/pychopper)
 * [Minimap2](https://github.com/lh3/minimap2)
 * [Samtools](http://www.htslib.org/)
+* [Kraken2](https://ccb.jhu.edu/software/kraken/)
 * [featureCounts](https://subread.sourceforge.net/featureCounts.html)
 
 ## Possibilities
 - QC control of the reads
 - Trim reads
 - Mapping of reads against human, Candida and bacterial reference genomes
+- Taxonomic classification of unmapped reads
 - Quantification
 
 ## Installation Linux
@@ -74,6 +76,7 @@ nextflow run main.nf --in_dir PATH --out_dir PATH
                          [--qc][--t_qc]
                          [--trimming] [--t-trimming]
                          [--mapping][--t_mapping]
+                         [--kraken] [--t_kraken]
                          [--help]
  
 For help: nextflow run main.nf --help
@@ -101,6 +104,9 @@ Input should look like one of these examples:
  * Parameters related to mapping:
    - [--mapping]: (default: true) If provided, will map sort and index reads against human, Candida and bacterial reference genomes
    - [--t_mapping]: ((default: 4), minimap2 uses t+1 during mapping) Number of threads used for mapping
+ * Parameters related to Kraken2:
+   - [--kraken]: (default: ture) If provided, will perform taxonomic classification of reads using Kraken2
+   - [--t_kraken]: (default: 4) Number of threads used for Kraken2 taxonomic classification
  * Other:
    - [--ignore_errors] (default: false) Option to continue running the pipeline even if errors occur 
 
@@ -131,8 +137,8 @@ The output is structured in the following way:
 - 02.qc (NanoPlot and NanoComp output)
 - 03.trimming (Pychopper output)
 - 04.mapped_reads (mapped reads for human, Candida, and bacterial genomes)
-- 05.quantification (gene counts for human, Candida and bacterial genomes - necessary for downstream analysis in R)
-
+- 05.kraken (Kraken2 taxonomic classification output)
+- 06.quantification (gene counts for human, Candida and bacterial genomes - necessary for downstream analysis in R)
 
 Along with these outputdirectories, 2 Nextflow reports are also generated:
 - report: metrics about the workflow execution
@@ -166,7 +172,10 @@ Output folder structure example:
 │   └── bacteria/
 │       ├── sample1.bam
 │       └── ...
-├── 05.quantification/           # featureCounts output
+├── 05.kraken/                   # Kraken2 taxonomic classification output
+│   ├── kraken_report.txt
+│   └── kraken_summary.txt
+├── 06.quantification/           # featureCounts output
 │   ├── human_counts.txt
 │   ├── candida_counts.txt
 │   └── bacteria_counts.txt
