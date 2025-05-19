@@ -26,7 +26,7 @@ find "$MERGED_DATA_DIR" -type f \( -name "*.fastq" -o -name "*.fastq.gz" \) | wh
   fq_name="${fq_base%.*}" # Remove extension
 
   echo "    Running NanoPlot..."
-  NanoPlot -t "$DEFAULT_THREADS_QC" -o "${QC_OUTPUT_DIR}" --prefix "${fq_name}_" --N50 --fastq "$fq_path"
+  NanoPlot -t "$QC_THREADS" -o "${QC_OUTPUT_DIR}" --prefix "${fq_name}_" --N50 --fastq "$fq_path"
 
   echo "  Finished processing: $fq_path"
   echo "-------------------------"
@@ -34,7 +34,7 @@ done
 
 # --- Run NanoComp after all NanoPlot executions ---
 echo "Running NanoComp on all processed FASTQ files..."
-NanoComp -t "$DEFAULT_THREADS_QC" -o "${QC_OUTPUT_DIR}" -f png --plot violin --fastq "$MERGED_DATA_DIR"/*.fastq
+NanoComp -t "$QC_THREADS" -o "${QC_OUTPUT_DIR}" -f png --plot violin --fastq "$MERGED_DATA_DIR"/*.fastq
 
 echo "QC analysis using NanoPack complete. Results are in: $QC_OUTPUT_DIR"
 

@@ -4,11 +4,11 @@
 source config.conf
 
 # --- Handle Input ---
-echo "Counting with NanoCount..."
+echo "Counting with Bambu Runner Docker..."
 echo "Output directory: $COUNTING_OUTPUT_DIR"
 echo "Processing data from: $COUNTING_INPUT_DIR"
 echo "Species list: $COUNTING_SPECIES_LIST"
-echo "Annotation fils: $COUNTING_ANNOTATIONS"
+echo "Annotation files: $COUNTING_ANNOTATIONS"
 
 # Create the output directory if it doesn't exist
 mkdir -p "${COUNTING_OUTPUT_DIR}"
@@ -40,13 +40,30 @@ for SAMPLE_DIR in "$COUNTING_INPUT_DIR"/*; do
             continue
         fi
 
-        OUT_FILE="${SAMPLE_OUTPUT_DIR}/${SAMPLE_NAME}_${SPECIES}_nanocount.tsv"
-        
-        echo "Quantifying sample: $SAMPLE_NAME for species: $SPECIES"
-        
-        # Run NanoCount using the BAM file and corresponding annotation (GTF/GFF)
-        NanoCount -i "$BAM_FILE" -a "$ANNOTATION_FILE" -o "$OUT_FILE"
-        
+        OUT_DIR="${SAMPLE_OUTPUT_DIR}/${SPECIES}_bambu_results"
+        mkdir -p "$OUT_DIR"
+
+        echo "Running Bambu Runner for sample: $SAMPLE_NAME, species: $SPECIES"
+
+        # Run the Bambu Runner Docker container
+        docker run --rm \
+            -v "${SAMPLE_DIR}:/data" \
+            -v "${COUNTING_OUTPUT_DIR}:/output" \
+            -v "$(dirname "$ANNOTATION_FILE"):/annotations" \
+            mathiasverbeke/bambu_runner:latest \
+            run_bambu.R \
+            --reads "/data/$(basename "$BAM_FILE")" \
+            --annotations "/annotations/$(basename "$ANNOTATION_FILE")" \
+            --genome "/annotations/genome.fa" \
+            --output-dir "/output/${SAMPLE_NAME}/${SPECIES}_bambu_results" \
+            --ncore 1 \
+            --stranded no \
+            --quant yes \
+            --discovery no \
+            --verbose yes \
+            --rc-out-dir "/output/${SAMPLE_NAME}/${SPECIES}_bambu_results/rc_cache" \
+            --low-memory no
+
         echo "Finished processing: $SAMPLE_NAME - $SPECIES"
     done
 done
