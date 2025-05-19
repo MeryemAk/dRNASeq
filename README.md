@@ -6,18 +6,17 @@ This Nextflow pipeline is designed for the analysis of dual RNA-seq data from va
 <img src="images/Pipeline.png" alt="Pipeline" width="800" style="display:block; margin-left:auto; margin-right:auto;"/>
 
 * [Nextflow](https://www.nextflow.io/)
-* [Nanocomp](https://github.com/wdecoster/nanocomp)
-* [Nanoplot](https://github.com/wdecoster/NanoPlot)
+* [Nanopack](https://github.com/wdecoster/nanopack)
 * [Pychopper](https://github.com/epi2me-labs/pychopper)
 * [Minimap2](https://github.com/lh3/minimap2)
 * [Samtools](http://www.htslib.org/)
 * [Kraken2](https://ccb.jhu.edu/software/kraken/)
-* [featureCounts](https://subread.sourceforge.net/featureCounts.html)
+* [bambu](https://hub.docker.com/r/mathiasverbeke/bambu_runner)
 
 ## Possibilities
 - QC control of the reads
 - Trim reads
-- Mapping of reads against human, Candida and bacterial reference genomes
+- Mapping of reads against Homo sapiens, Candida albicans and bacterial reference genomes
 - Taxonomic classification of unmapped reads
 - Quantification
 
