@@ -232,210 +232,165 @@ process trimming{
     script:
     """
     pychopper -t ${params.t_trimming} ${fq} ${fq.simpleName}_trimmed.fastq
-    # -k kit PCS109, PCS110, PCS111, LSK114
     """
 }
 
-/* Mapping to human reference genome */
-process human_mapping {
-
+/* Mapping */
+process mapping {
     label "mapping"
 
-    publishDir "${params.out_dir}/04.mapped_reads/human", mode: "copy"
+    publishDir "${params.out_dir}/04.mapping/", mode: "copy"
 
     input:
-    path fq             // Input FASTQ files either from trimming or preprocessing
+    path fq
+    val species_list from params.MAPPING_SPECIES_LIST
+    val ref_indexes from params.MAPPING_REF_INDEXES
+    val mapping_params from params.MAPPING_PARAMS
 
     output:
-    path "*_human.sam", emit: sam_output
-    path "*_unmapped_human.sam", emit: unmapped_output
+    path "${fq.simpleName}_mapped_*.bam", emit: mapped_bam
+    path "${fq.simpleName}_unmapped.fastq", emit: unmapped_fastq
 
     script:
     """
-    minimap2 -ax splice --secondary=no ${params.human_ref} $fq -t ${params.t_mapping} > ${fq.simpleName}_human.sam
+    # Start with the original FASTQ file as the input for the first mapping
+    previous_unmapped="${fq}"
+
+    # Loop through each species
+    for i in "\${!species_list[@]}"; do
+        species="\${species_list[\$i]}"
+        ref_index="\${ref_indexes[\$i]}"
+        params="\${mapping_params[\$i]}"
+
+        echo "=== Mapping to \${species^} reference genome ==="
+
+        # Check if the reference genome index exists
+        if [ ! -f "\$ref_index" ]; then
+            echo "Error: \${species^} reference genome file not found: \$ref_index"
+            exit 1
+        else
+            echo "\${species^} reference genome file found: \$ref_index"
+        fi
+
+        # Map reads with minimap2
+        sam_output="${fq.simpleName}_\${species}.sam"
+        cmd="minimap2 \$params \$ref_index \$previous_unmapped > \$sam_output"
+        echo "Mapping command: \$cmd"
+        eval "\$cmd"
+        echo "Mapped \$previous_unmapped to \${species^} genome: \$sam_output"
+
+        # Extract unmapped reads using samtools
+        unmapped_output="${fq.simpleName}_\${species}_unmapped.fastq"
+        cmd_unmapped="samtools fastq -f 4 \$sam_output > \$unmapped_output"
+        echo "Extraction command: \$cmd_unmapped"
+        eval "\$cmd_unmapped"
+        echo "Unmapped reads saved as: \$unmapped_output"
+
+        # Sort and index the mapped reads using samtools
+        sorted_bam="${fq.simpleName}_mapped_\${species}_sorted.bam"
+        cmd_sort="samtools sort \$sam_output -o \$sorted_bam"
+        echo "Sort command: \$cmd_sort"
+        eval "\$cmd_sort"
+
+        cmd_index="samtools index \$sorted_bam"
+        echo "Index command: \$cmd_index"
+        eval "\$cmd_index"
+        echo "Sorted and indexed BAM: \$sorted_bam"
+
+        # Update the input for the next iteration to be the unmapped reads from current mapping
+        previous_unmapped="\$unmapped_output"
+    done
     """
 }
 
-/* Extract unmapped/mapped reads and sort/index the mapped reads */
-process sort_index_human {
-
-    label "samtools"
-
-    publishDir "${params.out_dir}/04.mapped_reads/sorted_indexed", mode: "copy"
-
-    input:
-    path mapped_human       // Mapped sequences from human genome
-
-    output:
-    path "*.sorted.bam"
-    path "*.sorted.bam.bai"
-
-    script:
-    """
-    # Extract unmapped reads
-    samtools view -h -f 4 ${fq.simpleName}_human.sam > ${fq.simpleName}_unmapped_human.sam
-    
-    # Extract mapped reads
-    samtools view -h -F 4 ${fq.simpleName}_human.sam > ${fq.simpleName}_mapped_human.sam
-
-    # Sort and index BAM files
-    samtools sort -o ${mapped_human.simpleName}_mapped_sorted.bam ${mapped_human}
-    samtools index ${mapped_human.simpleName}_mapped_sorted.bam
-    """
-}
-
-/* Mapping of unmapped human reads to candida reference genome */
-process candida_mapping {
-
-    label "mapping"
-
-    publishDir "${params.out_dir}/04.mapped_reads/candida", mode: "copy"
-
-    input:
-    path unmapped_human     // Input FASTQ file from human_mapping process
-
-    output:
-    path "*_candida.sam", emit: sam_output
-    path "*_unmapped_candida.sam", emit: unmapped_output
-
-    script:
-    """
-    minimap2 -ax splice --secondary=no ${params.candida_ref} $unmapped_human -t ${params.t_mapping} > ${unmapped_human.simpleName}_candida.sam
-    """
-}
-
-/* Extract unmapped/mapped reads and sort/index the mapped reads */
-process sort_index_candida {
-
-    label "samtools"
-
-    publishDir "${params.out_dir}/04.mapped_reads/sorted_indexed", mode: "copy"
-
-    input:
-    path mapped_candida     // Mapped sequences from candida genome
-
-    output:
-    path "*.sorted.bam"
-    path "*.sorted.bam.bai"
-
-    script:
-    """
-    # Extract unmapped reads
-    samtools view -h -f 4 ${fq.simpleName}_candida.sam > ${fq.simpleName}_unmapped_candida.sam
-    
-    # Extract mapped reads
-    samtools view -h -F 4 ${fq.simpleName}_candida.sam > ${fq.simpleName}_mapped_candida.sam
-
-    # Sort and index BAM files
-    samtools sort -o ${mapped_candida.simpleName}_mapped_sorted.bam ${mapped_candida}
-    samtools index ${mapped_candida.simpleName}_mapped_sorted.bam
-    """
-}
-
-/* Mapping of unmapped candida reads to bacterial reference genome */
-process bacterial_mapping {
-
-    label "mapping"
-
-    publishDir "${params.out_dir}/04.mapped_reads/bacteria", mode: "copy"
-
-    input:
-    path unmapped_candida       // unmapped candida reads
-
-    output:
-    path "*_bacterial.sam", emit: sam_output
-    path "*_unmapped_bacteria.sam", emit: unmapped_output
-
-    script:
-    """
-    minimap2 -ax map-ont --secondary=no ${params.bacteria_index} $unmapped_candida -t ${params.t_mapping} > ${unmapped_candida.simpleName}_bacteria.sam
-    """
-}
-
-/* Sort and index the mapped reads */
-process sort_index_bacteria {
-
-    label "samtools"
-
-    publishDir "${params.out_dir}/04.mapped_reads/sorted_indexed", mode: "copy"
-
-    input:
-    path mapped_bacteria    // Mapped sequences from bacteria index
-
-    output:
-    path "*.sorted.bam"
-    path "*.sorted.bam.bai"
-
-    script:
-    """
-    # Extracting unmapped reads & transforming it to fastq for Kraken
-    samtools view -b -f 4 ${mapped_bacteria.simpleName}_bacteria.sam | samtools fastq - > ${mapped_bacteria.simpleName}_unmapped_bacteria.fastq
-
-    # Extract mapped reads
-    samtools view -h -F 4 ${fq.simpleName}_bacterial.sam > ${fq.simpleName}_mapped_bacteria.sam
-
-    # Sort and index BAM files
-    samtools sort -o ${mapped_bacteria.simpleName}_mapped_sorted.bam ${mapped_bacteria}
-    samtools index ${mapped_bacteria.simpleName}_mapped_sorted.bam
-    """
-}
-
-/* Kraken implementation for left over unmapped reads*/
+/* Kraken classification process */
 process kraken_classification {
-
     label "kraken"
 
     publishDir "${params.out_dir}/05.kraken_results/", mode: "copy"
 
     input:
-    path unmapped_bacterial_fastq,  // Input: Unmapped bacterial reads
-    path kraken_db                  // Kraken database
+    path unmapped_fastq
+    val kraken_db from params.kraken_db
+    val kraken_threads from params.t_kraken
 
     output:
-    path "*.kraken", emit: kraken_output
+    path "*.txt", emit: kraken_reports
+    path "*.fastq", emit: kraken_classified_fastq
 
     script:
     """
-    kraken2 --db ${kraken_db} --report ${unmapped_bacterial_fastq.simpleName}_kraken_report.txt --output ${unmapped_bacterial_fastq.simpleName}_kraken_output.txt ${unmapped_bacterial_fastq}
+    SAMPLE_NAME=\$(basename ${unmapped_fastq} .fastq)
+    SAMPLE_OUTPUT_DIR="${params.out_dir}/05.kraken_results/\${SAMPLE_NAME}"
+
+    mkdir -p "\$SAMPLE_OUTPUT_DIR"
+
+    kraken2 --db ${kraken_db} \
+        --threads ${kraken_threads} \
+        --report "\$SAMPLE_OUTPUT_DIR/\${SAMPLE_NAME}_report.txt" \
+        --output "\$SAMPLE_OUTPUT_DIR/\${SAMPLE_NAME}_output.txt" \
+        --use-names \
+        --classified-out "\$SAMPLE_OUTPUT_DIR/\${SAMPLE_NAME}_classified.fastq" \
+        --unclassified-out "\$SAMPLE_OUTPUT_DIR/\${SAMPLE_NAME}_unclassified.fastq" \
+        ${unmapped_fastq}
     """
 }
 
-/* Count genes with NanoCount */
-process quantification {
-    
+/* Counting process */
+process counting {
     label "counting"
 
     publishDir "${params.out_dir}/06.quantification/", mode: "copy"
 
     input:
-    path mapped_human
-    path mapped_candida
-    path mapped_bacteria
+    path sample_dir
+    val sample_name
+    val species_list from params.COUNTING_SPECIES_LIST
+    val annotations from params.COUNTING_ANNOTATIONS
 
     output:
-    path "*.counts"
+    path "${sample_name}_*_bambu_results"
 
     script:
     """
-    # Counting human genes
-    featureCounts -T ${params.t_counting} -a ${params.human_annotation} -o human_gene_counts.txt --primary ${mapped_human}
+    echo "Processing sample: ${sample_name}"
 
-    # Counting candida genes
-    featureCounts -T ${params.t_counting} -a ${params.candida_annotation} -o candida_gene_counts.txt --primary ${mapped_candida}
+    # Loop through each species by index
+    for i in "\${!species_list[@]}"; do
+        SPECIES="\${species_list[\$i]}"
+        ANNOTATION_FILE="\${annotations[\$i]}"
 
-    # Counting bacterial genes
-    featureCounts -T ${params.t_counting} -a ${params.bacteria_annotation} -o bacterial_gene_counts.txt --primary ${mapped_bacteria}
+        # Find the BAM file for the species in the sample directory
+        BAM_FILE="${sample_dir}/${sample_name}_mapped_\${SPECIES}_sorted.bam"
+        if [ ! -f "\$BAM_FILE" ]; then
+            echo "Warning: BAM file not found for species \$SPECIES in sample \$sample_name"
+            exit
+        fi
 
-    # flags
-    # -T: number of threads
-    # -a: annotation file
-    # -o: output file
-    # -t: feature type in GTF file (default: exon, gene, CDS, UTR or Transcripts)
-    # -g: attribute type (default: gene_id, transcript_id, exon_id, gene_name, biotype)
-    # --primary: only primary alignments
+        OUT_DIR="${sample_name}_\${SPECIES}_bambu_results"
+        mkdir -p "\$OUT_DIR"
+
+        # Run the Bambu Runner Docker container
+        docker run --rm \
+            -v "${sample_dir}:/data" \
+            -v "${params.out_dir}/06.quantification:/output" \
+            -v "\$(dirname \$ANNOTATION_FILE):/annotations" \
+            mathiasverbeke/bambu_runner:latest \
+            run_bambu.R \
+            --reads "/data/\$(basename \$BAM_FILE)" \
+            --annotations "/annotations/\$(basename \$ANNOTATION_FILE)" \
+            --genome "/annotations/genome.fa" \
+            --output-dir "/output/\${sample_name}/\${SPECIES}_bambu_results" \
+            --ncore ${params.t_counting} \
+            --stranded no \
+            --quant yes \
+            --discovery no \
+            --verbose yes \
+            --rc-out-dir "/output/\${sample_name}/\${SPECIES}_bambu_results/rc_cache" \
+            --low-memory no
+    done
     """
 }
-
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Workflow //
 workflow {
@@ -460,30 +415,39 @@ workflow {
         mapping_input = preprocessed_fastq.flatten()
     }
 
-    // Mapping to human reference genome
-    human_sam_files = human_mapping(mapping_input)
-
-    // Mapping to Candida reference genome
-    candida_sam_files = candida_mapping(human_sam_files.unmapped_output)
-
-    // Mapping to bacterial reference genome
-    bacterial_sam_files = bacterial_mapping(candida_sam_files.unmapped_output)
+    // Mapping
+    mapped_results = mapping(
+        mapping_input,
+        params.MAPPING_SPECIES_LIST,
+        params.MAPPING_REF_INDEXES,
+        params.MAPPING_PARAMS
+    )
 
     // Kraken classification (using unmapped bacterial reads in FASTQ format)
-    kraken_classification(
-        sort_index_bacteria.unmapped_bacteria_fastq,
-        params.kraken_db
-    )
+    if (params.kraken) {
+        kraken_classification(
+            mapped_results.unmapped_fastq,
+            params.kraken_db
+            params.t_kraken
+        )
+    }
 
     // Quantification
-    quantification(
-        mapped_human.sam_output,
-        mapped_candida.sam_output,
-        mapped_bacteria.sam_output,
-        params.human_annotation,
-        params.candida_annotation,
-        params.bacteria_annotation
-    )
+    if (params.counting) {
+        mapped_results.mapped_bam
+            .map { bam_file -> 
+                def sample_name = bam_file.simpleName.split('_mapped_')[0]
+                def sample_dir = bam_file.parent
+                tuple(sample_dir, sample_name)
+            }
+            .set { sample_info }
+
+        counting(
+            sample_info,
+            params.COUNTING_SPECIES_LIST,
+            params.COUNTING_ANNOTATIONS
+        )
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
