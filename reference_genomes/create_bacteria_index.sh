@@ -92,7 +92,7 @@ echo # Add an empty line for better readability
 
 ### MAKE INDEX WITH MINIMAP2 ######################
 echo "Creating index with minimap2..."
-minimap2 -x map-pb -d $OUTDIR/bacteria_index.mmi $OUTDIR/bacteria_seq.fna
+minimap2 -x map-ont -d $OUTDIR/bacteria_index.mmi $OUTDIR/bacteria_seq.fna
 echo # Add an empty line for better readability
 echo "Index file can be found at $OUTDIR/bacteria_index.mmi"
 
