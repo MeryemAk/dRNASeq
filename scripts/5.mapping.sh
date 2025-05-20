@@ -77,14 +77,6 @@ for input_file in "$MAPPING_INPUT_DIR"/*; do
         echo "Index command: $cmd_index"
         eval "$cmd_index"
         echo "Sorted and indexed BAM: ${sorted_bam}"
-
-        # Generate alignment statistics using seqkit
-        echo "===== Generating alignment statistics for ${species^} ====="
-        stats_output="${sample_outdir}/${sample_name}_${species}_stats.txt"
-        cmd_stats="seqkit bam -s ${sorted_bam} > ${stats_output}"
-        echo "Alignment stats command: $cmd_stats"
-        eval "$cmd_stats"
-        echo "Alignment statistics saved as: ${stats_output}"
         
         # Update the input for the next iteration to be the unmapped reads from current mapping
         previous_unmapped="${unmapped_output}"
