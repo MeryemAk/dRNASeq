@@ -6,9 +6,11 @@ This Nextflow pipeline is designed for the analysis of dual RNA-seq data from va
 <img src="images/Pipeline.png" alt="Pipeline" width="800" style="display:block; margin-left:auto; margin-right:auto;"/>
 
 * [Nextflow](https://www.nextflow.io/)
+* [Diamond](https://github.com/bbuchfink/diamond)
 * [Nanopack](https://github.com/wdecoster/nanopack)
 * [Pychopper](https://github.com/epi2me-labs/pychopper)
 * [Minimap2](https://github.com/lh3/minimap2)
+* [MMseqs2](https://github.com/soedinglab/MMseqs2)
 * [Samtools](http://www.htslib.org/)
 * [Kraken2](https://ccb.jhu.edu/software/kraken/)
 * [bambu](https://hub.docker.com/r/mathiasverbeke/bambu_runner)
