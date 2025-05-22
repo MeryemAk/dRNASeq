@@ -24,8 +24,8 @@ This Nextflow pipeline is designed for the analysis of dual RNA-seq data from va
 
 ## Wiki pages
 The workflow can be executed in two ways:  
-- Using the singular scripts (semi-automated)  
-- Using Nextflow (automated)  
+- Using the singular scripts
+- Using Nextflow
 
 For more information on how to start, refer to the Standard Operating Procedures of [Nextflow](https://github.com/MeryemAk/dRNASeq/wiki/Standard-Operating-Procedure-for-Nextflow) or the [scripts](https://github.com/MeryemAk/dRNASeq/wiki/Standard-Operating-Procedure-for-scripts).
 
