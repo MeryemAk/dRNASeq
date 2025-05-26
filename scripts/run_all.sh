@@ -43,34 +43,40 @@ bash 2.merge.sh
 echo "2.merge.sh completed."
 echo "--------------------------------------------------"
 
-# --- Step 3: Trim FASTQ files with Pychopper ---
+# --- Step 3: Filter rRNA ---
+echo "Running 3.filter_rRNA.sh to filter rRNA..."
+bash 3.filter_rRNA.sh
+echo "3.filter_rRNA.sh completed."
+echo "--------------------------------------------------"
+
+# --- Step 4: Trim FASTQ files with Pychopper ---
 echo "Running 4.pychopper.sh to trim FASTQ files..."
 bash 4.pychopper.sh
 echo "4.pychopper.sh completed."
 echo "--------------------------------------------------"
 
-# --- Step 4: Perform QC with NanoPack ---
-echo "Running 3.qc.sh to perform QC analysis..."
-bash 3.qc.sh
-echo "3.qc.sh completed."
+# --- Step 5: Perform QC with NanoPack ---
+echo "Running 5.qc.sh to perform QC analysis..."
+bash 5.qc.sh
+echo "5.qc.sh completed."
 echo "--------------------------------------------------"
 
-# --- Step 5: Map reads with Minimap2 ---
-echo "Running 5.mapping.sh to map reads..."
-bash 5.mapping.sh
-echo "5.mapping.sh completed."
+# --- Step 6: Map reads with Minimap2 ---
+echo "Running 6.mapping.sh to map reads..."
+bash 6.mapping.sh
+echo "6.mapping.sh completed."
 echo "--------------------------------------------------"
 
-# --- Step 6: Count reads with Bambu Runner ---
-echo "Running 6.counting.sh to count reads..."
-bash 6.counting.sh
-echo "6.counting.sh completed."
+# --- Step 7: Count reads with Bambu Runner ---
+echo "Running 7.counting.sh to count reads..."
+bash 7.counting.sh
+echo "7.counting.sh completed."
 echo "--------------------------------------------------"
 
-# --- Step 7: Kraken2 Classification ---
-echo "Running 7.kraken.sh for Kraken2 classification..."
-bash 7.kraken.sh
-echo "7.kraken.sh completed."
+# --- Step 8: Kraken2 Classification ---
+echo "Running 8.kraken.sh for Kraken2 classification..."
+bash 8.kraken.sh
+echo "8.kraken.sh completed."
 echo "--------------------------------------------------"
 
 echo "All dRNASeq processing pipeline steps completed successfully!"

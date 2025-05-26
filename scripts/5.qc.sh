@@ -8,7 +8,7 @@ source config.conf
 # --- Handle Input ---
 echo "Starting QC analysis on merged data using NanoPack..."
 echo "Output directory: $QC_OUTPUT_DIR"
-echo "Processing data from: $MERGED_DATA_DIR"
+echo "Processing data from: $QC_INPUT_DIR"
 echo "Number of threads (QC): $QC_THREADS"
 
 # Create the output directory if it doesn't exist
@@ -17,8 +17,8 @@ mkdir -p "${QC_OUTPUT_DIR}"
 echo "-------------------------"
 
 # --- Process FASTQ Files ---
-# Find all FASTQ files within the merged data directory
-find "$MERGED_DATA_DIR" -type f \( -name "*.fastq" -o -name "*.fastq.gz" \) | while IFS= read -r fq_path; do
+# Find all FASTQ files within the input directory
+find "$QC_INPUT_DIR" -type f \( -name "*.fastq" -o -name "*.fastq.gz" \) | while IFS= read -r fq_path; do
   echo "Processing: $fq_path"
 
   # --- NanoPlot QC using NanoPack ---

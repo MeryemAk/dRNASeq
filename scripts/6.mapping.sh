@@ -14,7 +14,6 @@ echo "Mapping parameters: $MAPPING_PARAMS"
 # Create the output directory if it doesn't exist
 mkdir -p "${MAPPING_OUTPUT_DIR}"
 
-
 # Loop over FASTQ files in MAPPING_INPUT_DIR
 for input_file in "$MAPPING_INPUT_DIR"/*; do
     # Only process files (skip directories, if any)

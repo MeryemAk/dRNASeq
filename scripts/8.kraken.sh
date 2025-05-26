@@ -21,7 +21,7 @@ fi
 
 echo "-------------------------"
 
-# Loop through all FASTQ files in the input directory
+# Loop through all unmapped bacteria FASTQ files in the input directory
 for FILE in "$KRAKEN_INPUT_DIR"/*.fastq; do
     SAMPLE_NAME=$(basename "$FILE" _merged.fastq)
     SAMPLE_OUTPUT_DIR="${KRAKEN_OUTPUT_DIR}/${SAMPLE_NAME}"
