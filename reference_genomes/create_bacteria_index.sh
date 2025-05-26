@@ -2,7 +2,7 @@
 
 ### HARDCODED INPUT ####################################
 OUTDIR="."
-FORMAT="fasta,gff"
+FORMAT="fasta,gtf"
 DATABASE="refseq"
 FNA_DIR="$OUTDIR/fna_files"
 GFF_DIR="$OUTDIR/gff_files"
@@ -13,7 +13,6 @@ GFF_DIR="$OUTDIR/gff_files"
                   
 ### SPECIES LIST ########################################
 # RefSeq genome for bacteria
-# ...existing code...
 bacteria=(
   "GCF_000159015.1" # Actinomyces coleocanis --> Gleimia coleocanis
   "GCF_002861525.1" # Actinomyces urogenitalis
