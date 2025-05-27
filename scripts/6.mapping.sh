@@ -15,7 +15,7 @@ echo "Mapping parameters: $MAPPING_PARAMS"
 mkdir -p "${MAPPING_OUTPUT_DIR}"
 
 # Loop over FASTQ files in MAPPING_INPUT_DIR
-for input_file in "$MAPPING_INPUT_DIR"/*; do
+for input_file in "$MAPPING_INPUT_DIR"/*.fastq; do
     # Only process files (skip directories, if any)
     [ -f "$input_file" ] || continue
 
