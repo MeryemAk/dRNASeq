@@ -6,26 +6,27 @@ This Nextflow pipeline is designed for the analysis of dual RNA-seq data from va
 <img src="images/Pipeline.png" alt="Pipeline" width="800" style="display:block; margin-left:auto; margin-right:auto;"/>
 
 * [Nextflow](https://www.nextflow.io/)
-* [Diamond](https://github.com/bbuchfink/diamond)
 * [Nanopack](https://github.com/wdecoster/nanopack)
 * [Pychopper](https://github.com/epi2me-labs/pychopper)
 * [Minimap2](https://github.com/lh3/minimap2)
 * [MMseqs2](https://github.com/soedinglab/MMseqs2)
+* [gffread](https://github.com/gpertea/gffread)
 * [Samtools](http://www.htslib.org/)
 * [Kraken2](https://ccb.jhu.edu/software/kraken/)
 * [bambu](https://hub.docker.com/r/mathiasverbeke/bambu_runner)
 
 ## Possibilities
-- QC control of the reads
+- Filter 16S/18S and 23S/28S rRNA from samples
 - Trim reads
+- QC control of the reads
 - Mapping of reads against Homo sapiens, Candida albicans and bacterial reference genomes
-- Taxonomic classification of unmapped reads
 - Quantification
+- Taxonomic classification of unmapped reads
 
 ## Wiki pages
 The workflow can be executed in two ways:  
 - Using the singular scripts
-- Using Nextflow
+- Using Nextflow (not available yet)
 
 For more information on how to start, refer to the Standard Operating Procedures of [Nextflow](https://github.com/MeryemAk/dRNASeq/wiki/Standard-Operating-Procedure-for-Nextflow) or the [scripts](https://github.com/MeryemAk/dRNASeq/wiki/Standard-Operating-Procedure-for-scripts).
 
