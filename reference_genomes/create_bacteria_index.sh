@@ -2,7 +2,7 @@
 
 ### HARDCODED INPUT ####################################
 OUTDIR="."
-FORMAT="fasta,gtf"
+FORMAT="fasta,gff"
 DATABASE="refseq"
 FNA_DIR="$OUTDIR/fna_files"
 GFF_DIR="$OUTDIR/gff_files"
@@ -10,6 +10,8 @@ GFF_DIR="$OUTDIR/gff_files"
 ### REQUIREMENTS ########################################
 # Requires:
 #   - ncbi-genome-download (pip install ncbi-genome-download)
+#   - mmseqs2 (conda install bioconda::mmseqs2)
+#   - gffread: (conda install bioconda::gffread)
                   
 ### SPECIES LIST ########################################
 # RefSeq genome for bacteria
@@ -178,12 +180,24 @@ minimap2 -x map-ont -d $OUTDIR/bacteria_index.mmi $OUTDIR/bacteria_seq_mmseqs_re
 echo # Add an empty line for better readability
 echo "Index file can be found at $OUTDIR/bacteria_index.mmi"
 
-### CONCATENATE ALL .gff FILES INTO ONE ###################
-echo "Concatenating .gff files into one..."
-if [ ! -f "$OUTDIR/bacteria_annotation.gff" ]; then
-    find "$GFF_DIR" -name "*.gff" -exec cat {} + > "$OUTDIR/bacteria_annotation.gff"
-    echo "Annotation file: $OUTDIR/bacteria_annotation.gff"
+### CONVERT GFF FILES TO GTF FORMAT ##################
+echo "Converting .gff files to .gtf format..."
+if [ ! -f "$OUTDIR/bacteria_annotation.gtf" ]; then
+    mkdir -p "$OUTDIR/gtf_files"
+    for gff_file in "$GFF_DIR"/*.gff; do
+        gffread "$gff_file" -T -o "$OUTDIR/gtf_files/$(basename "${gff_file%.gff}.gtf")"
+    done
+    echo "Converted GFF files to GTF format in $OUTDIR/gtf_files"
 else
-    echo "Concatenated .gff file already exists. Skipping this step."
+    echo "GTF files already exist. Skipping conversion step."
+fi
+
+### CONCATENATE ALL .gtf FILES INTO ONE ###################
+echo "Concatenating .gtf files into one..."
+if [ ! -f "$OUTDIR/bacteria_annotation.gtf" ]; then
+    find "$GFF_DIR" -name "*.gtf" -exec cat {} + > "$OUTDIR/bacteria_annotation.gtf"
+    echo "Annotation file: $OUTDIR/bacteria_annotation.gtf"
+else
+    echo "Concatenated .gtf file already exists. Skipping this step."
 fi
 echo # Add an empty line for better readability
