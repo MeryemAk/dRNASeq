@@ -9,6 +9,7 @@ echo "Output directory: $COUNTING_OUTPUT_DIR"
 echo "Processing data from: $COUNTING_INPUT_DIR"
 echo "Species list: $COUNTING_SPECIES_LIST"
 echo "Annotation files: $COUNTING_ANNOTATIONS"
+echo "Genome files: $COUNTING_GENOMES"
 
 # Create the output directory if it doesn't exist
 mkdir -p "${COUNTING_OUTPUT_DIR}"
