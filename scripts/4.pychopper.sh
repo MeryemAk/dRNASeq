@@ -33,4 +33,9 @@ for file in "$TRIMMING_INPUT_DIR"/*.fastq; do
 
     echo "-------------------------"
 done
+
+# File management
+echo "Moving report file to the output directory..."
+mv pychopper_report.pdf pychopper.tsv "$TRIMMING_OUTPUT_DIR/"
+
 echo "Done trimming with Pychopper"
