@@ -49,12 +49,13 @@ for SAMPLE_DIR in "$COUNTING_INPUT_DIR"/*; do
         docker run --rm \
             -v "${SAMPLE_DIR}:/data" \
             -v "${COUNTING_OUTPUT_DIR}:/output" \
-            -v "$(dirname "$ANNOTATION_FILE"):/annotations" \
+            -v "$HOME/dRNASeq/reference_genomes:/annotations" \
+            -v "$HOME/dRNASeq/reference_genomes:/genomes" \
             mathiasverbeke/bambu_runner:latest \
             run_bambu.R \
             --reads "/data/$(basename "$BAM_FILE")" \
             --annotations "/annotations/$(basename "$ANNOTATION_FILE")" \
-            --genome "/annotations/genome.fa" \
+            --genome "/genomes/$(basename "$GENOME_FILE")" \
             --output-dir "/output/${SAMPLE_NAME}/${SPECIES}_bambu_results" \
             --ncore 1 \
             --stranded no \
