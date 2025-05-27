@@ -23,8 +23,7 @@ for file in "$TRIMMING_INPUT_DIR"/*.fastq; do
     BASENAME=$(basename "$file" .fastq)
     FILE_NAME_ONLY=$(basename "$file")
 
-    pychopper -t ${THREADS} "$file" "$TRIMMING_OUTPUT_DIR/${BASENAME}_trimmed.fastq"
-    # -k kit PCS109, PCS110, PCS111, LSK114
+    pychopper -t $TRIMMING_THREADS "$file" "$TRIMMING_OUTPUT_DIR/${BASENAME}_trimmed.fastq" -r "pychopper_report.pdf"
 
     if [ $? -ne 0 ]; then
         echo "Trimming failed for ${FILE_NAME_ONLY}"
