@@ -31,6 +31,7 @@ for SAMPLE_DIR in "$COUNTING_INPUT_DIR"/*; do
     for i in "${!COUNTING_SPECIES_LIST[@]}"; do
         SPECIES="${COUNTING_SPECIES_LIST[$i]}"
         ANNOTATION_FILE="${COUNTING_ANNOTATIONS[$i]}"
+        GENOME_FILE="${COUNTING_GENOMES[$i]}"
         
         echo "Processing species: $SPECIES using annotation: $ANNOTATION_FILE"
 
@@ -41,29 +42,25 @@ for SAMPLE_DIR in "$COUNTING_INPUT_DIR"/*; do
             continue
         fi
 
-        OUT_DIR="${SAMPLE_OUTPUT_DIR}/${SPECIES}_bambu_results"
-        mkdir -p "$OUT_DIR"
-
         echo "Running Bambu Runner for sample: $SAMPLE_NAME, species: $SPECIES"
 
         # Run the Bambu Runner Docker container
         docker run --rm \
             -v "${SAMPLE_DIR}:/data" \
             -v "${COUNTING_OUTPUT_DIR}:/output" \
-            -v "$HOME/dRNASeq/reference_genomes:/annotations" \
-            -v "$HOME/dRNASeq/reference_genomes:/genomes" \
+            -v "$HOME/dRNASeq/reference_genomes:/reference_genomes" \
             mathiasverbeke/bambu_runner:latest \
             run_bambu.R \
             --reads "/data/$(basename "$BAM_FILE")" \
-            --annotations "/annotations/$(basename "$ANNOTATION_FILE")" \
-            --genome "/genomes/$(basename "$GENOME_FILE")" \
-            --output-dir "/output/${SAMPLE_NAME}/${SPECIES}_bambu_results" \
+            --annotations "/reference_genomes/$(basename "$ANNOTATION_FILE")" \
+            --genome "/reference_genomes/$(basename "$GENOME_FILE")" \
+            --output-dir "/output/${SAMPLE_NAME}" \
             --ncore 1 \
             --stranded no \
             --quant yes \
             --discovery no \
             --verbose yes \
-            --rc-out-dir "/output/${SAMPLE_NAME}/${SPECIES}_bambu_results/rc_cache" \
+            --rc-out-dir "/output/${SAMPLE_NAME}/rc_cache" \
             --low-memory no
 
         echo "Finished processing: $SAMPLE_NAME - $SPECIES"
