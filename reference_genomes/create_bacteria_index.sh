@@ -157,20 +157,20 @@ echo # Add an empty line for better readability
 ### CONCATENATE ALL .fna FILES INTO ONE ###################
 echo "Concatenating all .fna files into one file..."
 if [ ! -f "$OUTDIR/bacteria_seq.fna" ]; then
-    find "$FNA_DIR" -name "*.fna" -exec cat {} + > "$OUTDIR/bacteria_seq.fna"
-    echo "All .fna files have been concatenated into $OUTDIR/bacteria_seq.fna"
+  find "$FNA_DIR" -name "*.fna" -exec cat {} + > "$OUTDIR/bacteria_seq.fna"
+  echo "All .fna files have been concatenated into $OUTDIR/bacteria_seq.fna"
 else
-    echo "Concatenated .fna file already exists. Skipping this step."
+  echo "Concatenated .fna file already exists. Skipping this step."
 fi
 echo # Add an empty line for better readability
 
-### CLUSTER SEQUENCES WITH CD-HIT-EST ###################
+### CLUSTER SEQUENCES WITH MMseqs2 ###################
 echo "Clustering sequences with MMseqs2..."
 if [ ! -f "$OUTDIR/bacteria_seq_mmseqs_rep_seq.fasta" ]; then
-    mmseqs easy-linclust "$OUTDIR/bacteria_seq.fna" "$OUTDIR/bacteria_seq_mmseqs" tmp --min-seq-id 0.97 --cov-mode 1 -c 0.97 --split-memory-limit 4000 --threads 2
-    echo "Clustering complete. Output: $OUTDIR/bacteria_seq_mmseqs_rep_seq.fasta"
+  mmseqs easy-linclust "$OUTDIR/bacteria_seq.fna" "$OUTDIR/bacteria_seq_mmseqs" tmp --min-seq-id 0.97 --cov-mode 1 -c 0.97 --split-memory-limit 4000 --threads 2
+  echo "Clustering complete. Output: $OUTDIR/bacteria_seq_mmseqs_rep_seq.fasta"
 else
-    echo "MMseqs output already exists. Skipping clustering step."
+  echo "MMseqs output already exists. Skipping clustering step."
 fi
 echo # Add an empty line for better readability
 
@@ -183,21 +183,21 @@ echo "Index file can be found at $OUTDIR/bacteria_index.mmi"
 ### CONVERT GFF FILES TO GTF FORMAT ##################
 echo "Converting .gff files to .gtf format..."
 if [ ! -f "$OUTDIR/bacteria_annotation.gtf" ]; then
-    mkdir -p "$OUTDIR/gtf_files"
-    for gff_file in "$GFF_DIR"/*.gff; do
-        gffread "$gff_file" -T -o "$OUTDIR/gtf_files/$(basename "${gff_file%.gff}.gtf")"
-    done
-    echo "Converted GFF files to GTF format in $OUTDIR/gtf_files"
+  mkdir -p "$OUTDIR/gtf_files"
+  for gff_file in "$GFF_DIR"/*.gff; do
+    gffread "$gff_file" -T -o "$OUTDIR/gtf_files/$(basename "${gff_file%.gff}.gtf")"
+  done
+  echo "Converted GFF files to GTF format in $OUTDIR/gtf_files"
 else
-    echo "GTF files already exist. Skipping conversion step."
+  echo "GTF files already exist. Skipping conversion step."
 fi
 
 ### CONCATENATE ALL .gtf FILES INTO ONE ###################
 echo "Concatenating .gtf files into one..."
 if [ ! -f "$OUTDIR/bacteria_annotation.gtf" ]; then
-    find "$GFF_DIR" -name "*.gtf" -exec cat {} + > "$OUTDIR/bacteria_annotation.gtf"
-    echo "Annotation file: $OUTDIR/bacteria_annotation.gtf"
+  find "$GFF_DIR" -name "*.gtf" -exec cat {} + > "$OUTDIR/bacteria_annotation.gtf"
+  echo "Annotation file: $OUTDIR/bacteria_annotation.gtf"
 else
-    echo "Concatenated .gtf file already exists. Skipping this step."
+  echo "Concatenated .gtf file already exists. Skipping this step."
 fi
 echo # Add an empty line for better readability
