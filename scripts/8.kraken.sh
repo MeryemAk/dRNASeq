@@ -11,7 +11,7 @@ echo "Kraken2 database: $KRAKEN_DB"
 echo "Number of threads: $KRAKEN_THREADS"
 
 # Create the output directory if it doesn't exist
-mkdir -p "${COUNTING_OUTPUT_DIR}"
+mkdir -p "${KRAKEN_OUTPUT_DIR}"
 
 # Check if Kraken2 database exists
 if [ ! -d "$KRAKEN_DB" ]; then
@@ -21,9 +21,17 @@ fi
 
 echo "-------------------------"
 
-# Loop through all unmapped bacteria FASTQ files in the input directory
-for FILE in "$KRAKEN_INPUT_DIR"/*.fastq; do
-    SAMPLE_NAME=$(basename "$FILE" _merged.fastq)
+# Loop through all sample subdirectories in the mapping output directory
+find "$KRAKEN_INPUT_DIR" -maxdepth 1 -type d -not -path "$KRAKEN_INPUT_DIR" | while read SAMPLE_DIR; do
+    SAMPLE_NAME=$(basename "$SAMPLE_DIR")
+    FILE="${SAMPLE_DIR}/${SAMPLE_NAME}_filtered_trimmed_bacteria_unmapped.fastq"
+
+    # Check if the unmapped FASTQ file exists
+    if [ ! -f "$FILE" ]; then
+        echo "Warning: Unmapped FASTQ file not found: $FILE"
+        continue
+    fi
+
     SAMPLE_OUTPUT_DIR="${KRAKEN_OUTPUT_DIR}/${SAMPLE_NAME}"
 
     # Create a subdirectory for each sample
