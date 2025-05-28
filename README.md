@@ -9,6 +9,7 @@ This Nextflow pipeline is designed for the analysis of dual RNA-seq data from va
 * [Nanopack](https://github.com/wdecoster/nanopack)
 * [Pychopper](https://github.com/epi2me-labs/pychopper)
 * [Minimap2](https://github.com/lh3/minimap2)
+* [SeqKit](https://bioinf.shenwei.me/seqkit/)
 * [MMseqs2](https://github.com/soedinglab/MMseqs2)
 * [gffread](https://github.com/gpertea/gffread)
 * [Samtools](http://www.htslib.org/)
