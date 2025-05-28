@@ -1,5 +1,5 @@
 # Dual RNA-Seq workflow
-This Nextflow pipeline is designed for the analysis of dual RNA-seq data from vaginal swabs. It performs preprocessing, quality control (QC), mapping, and quantification of reads from host (Homo sapiens), yeast (Candida albicans) and bacterial genomes.
+This Nextflow pipeline is designed for the analysis of dual RNA-seq data from vaginal swabs. It performs preprocessing, quality control (QC), mapping quantification and taxonomic classification of reads from host (Homo sapiens), yeast (Candida albicans) and bacterial genomes.
 
 ## Tools used in the workflow
 
@@ -30,6 +30,20 @@ The workflow can be executed in two ways:
 
 For more information on how to start, refer to the Standard Operating Procedures of [Nextflow](https://github.com/MeryemAk/dRNASeq/wiki/Standard-Operating-Procedure-for-Nextflow) or the [scripts](https://github.com/MeryemAk/dRNASeq/wiki/Standard-Operating-Procedure-for-scripts).
 
+## Repository structure
+* `1.data/`: store data in this directory in fastq format  
+* `images/`: images used in documentation  
+* `misc/`: miscellaneous files (other documenatation relevant to the GitHub repository)  
+* `nanocomp/`: Docker file to build nanocomp  
+* `nanopack/`: Docker file to build nanopack  
+* `reference_genomes/`: store reference genomes and annotation files here. Also contains the `create_bacteria_index.sh` script to download bacterial files  
+* `scripts/`: contains all script needed to run the pipeline individually  
+* `environment.yml`: file used to build the Conda environment  
+* `main.nf`: main nextflow script that runs all steps  
+* `nextflow.config`: configuration file for main.nf  
+* `README.md`: this document  
+
 ## Other remarks
 Each time Nextflow is executed, directories within the work directory are created where the processes run. Don't forget to empty this work direcotry regulary.
 
+## Questions? meryem191101@gmail.com
