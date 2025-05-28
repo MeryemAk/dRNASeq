@@ -167,7 +167,7 @@ echo # Add an empty line for better readability
 ### CLUSTER SEQUENCES WITH MMseqs2 ###################
 echo "Clustering sequences with MMseqs2..."
 if [ ! -f "$OUTDIR/bacteria_seq_mmseqs_rep_seq.fasta" ]; then
-  mmseqs easy-linclust "$OUTDIR/bacteria_seq.fna" "$OUTDIR/bacteria_seq_mmseqs" tmp --min-seq-id 0.97 --cov-mode 1 -c 0.97 --split-memory-limit 4000 --threads 2
+  mmseqs easy-linclust "$OUTDIR/bacteria_seq.fna" "$OUTDIR/bacteria_seq_mmseqs" tmp --min-seq-id 0.95 --cov-mode 1 -c 0.95 --split-memory-limit 4000 --threads 2
   echo "Clustering complete. Output: $OUTDIR/bacteria_seq_mmseqs_rep_seq.fasta"
 else
   echo "MMseqs output already exists. Skipping clustering step."
