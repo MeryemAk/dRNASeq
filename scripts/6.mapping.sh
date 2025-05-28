@@ -65,6 +65,16 @@ for input_file in "$MAPPING_INPUT_DIR"/*.fastq; do
         eval "$cmd_unmapped"
         echo "Unmapped reads saved as: ${unmapped_output}"
 
+        # Count identical unmapped reads for bacterial species
+        if [[ "$species" == "bacteria" ]]; then
+            echo "===== Counting identical unmapped sequences for Bacteria ====="
+            count_output="${sample_outdir}/${sample_name}_${species}_unmapped_counts.txt"
+            cmd_count="seqkit seq -s -i ${unmapped_output} | sort | uniq -c | sort -nr > ${count_output}"
+            echo "Counting command: $cmd_count"
+            eval "$cmd_count"
+            echo "Counts saved to: ${count_output}"
+        fi
+
         # Sort and index the mapped reads using samtools
         echo "===== Sorting and indexing mapped reads for ${species^} ====="
         sorted_bam="${sample_outdir}/${sample_name}_mapped_${species}_sorted.bam"
